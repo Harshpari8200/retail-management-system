@@ -10,6 +10,7 @@ import com.rms.model.Wholesaler;
 import com.rms.repository.ProductRepository;
 import com.rms.repository.UserRepository;
 import com.rms.repository.WholesalerRepository;
+import com.rms.specification.ProductSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +18,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,45 +134,33 @@ public class ProductServiceImpl implements ProductService {
 
 
     /**
-     * fetch all the products
-     * @param wholesalerId
-     * @param pageable
-     * @return
-     */
-    @Override
-    public Page<ProductDTO> getAllProducts(Long wholesalerId, Pageable pageable) {
-        // Using the derived query method
-        Page<Product> products = productRepository.findByWholesalerIdAndIsActive(wholesalerId, true, pageable);
-        return products.map(this::mapEntityToDTO);
-    }
-
-
-    /**
-     * fetch products have given category
+     * combine method for all filter query
+     * filter by wholesaler id, category, search...
      * @param wholesalerId
      * @param category
-     * @param pageable
-     * @return
-     */
-    @Override
-    public Page<ProductDTO> getProductsByCategory(Long wholesalerId, String category, Pageable pageable) {
-        // Using the derived query method
-        Page<Product> products = productRepository.findByWholesalerIdAndCategoryAndIsActive(wholesalerId, category, true, pageable);
-        return products.map(this::mapEntityToDTO);
-    }
-
-
-    /**
-     * search product using custom query
-     * @param wholesalerId
      * @param searchTerm
+     * @param isActive
      * @param pageable
      * @return
      */
-    // The searchProducts method remains the same
     @Override
-    public Page<ProductDTO> searchProducts(Long wholesalerId, String searchTerm, Pageable pageable) {
-        Page<Product> products = productRepository.searchProducts(wholesalerId, searchTerm, pageable);
+    public Page<ProductDTO> getFilteredProducts(
+            Long wholesalerId,
+            String category,
+            String searchTerm,
+            Boolean isActive,
+            Pageable pageable) {
+
+        log.info("Filtering products - wholesalerId: {}, category: {}, search: {}",
+                wholesalerId, category, searchTerm);
+
+        // Build specification using our Specification class
+        Specification<Product> spec = ProductSpecification.withFilters(
+                wholesalerId, category, searchTerm, isActive);
+
+        // ONE findAll call - NO custom queries!
+        Page<Product> products = productRepository.findAll(spec, pageable);
+
         return products.map(this::mapEntityToDTO);
     }
 
@@ -198,7 +190,17 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public List<String> getAllCategories(Long wholesalerId) {
-        return productRepository.findDistinctCategoriesByWholesalerId(wholesalerId);
+        if (wholesalerId == null) {
+            return List.of();
+        }
+
+        Specification<Product> spec = ProductSpecification.distinctCategories(wholesalerId);
+
+        return productRepository.findAll(spec).stream()
+                .map(Product::getCategory)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
 

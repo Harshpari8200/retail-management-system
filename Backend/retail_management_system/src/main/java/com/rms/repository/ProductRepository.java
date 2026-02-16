@@ -4,6 +4,7 @@ import com.rms.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,9 +13,28 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    Page<Product> findByWholesalerIdAndIsActive(Long wholesalerId, Boolean isActive, Pageable pageable);
+    Optional<Product> findBySkuCodeAndIdNot(String skuCode, Long id);
+    boolean existsBySkuCode(String skuCode);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+Page<Product> findByWholesalerIdAndIsActive(Long wholesalerId, Boolean isActive, Pageable pageable);
 
 //    // For active products only, we need a custom query or use default parameter
 //    default Page<Product> findByWholesalerIdAndIsActiveTrue(Long wholesalerId, Pageable pageable) {
@@ -52,4 +72,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    long countByWholesalerIdAndIsActiveTrue(Long wholesalerId);
 //
 //    Page<Product> findByWholesalerIdAndStockQuantityLessThanEqualAndIsActiveTrue(Long wholesalerId, Integer stockQuantity, Pageable pageable);
-}
+ */

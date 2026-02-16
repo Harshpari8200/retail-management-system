@@ -2,15 +2,13 @@ package com.rms.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
+// SIMPLE: Login response - just what frontend needs
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class LoginResponceDTO {
-
     private String token;
-    private String role;
-
-
+    private String role;        // For UI routing
+    private Long userId;        // For API calls
+    private String username;     // For display
 }

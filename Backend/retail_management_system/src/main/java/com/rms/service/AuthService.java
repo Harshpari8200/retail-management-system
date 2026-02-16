@@ -3,21 +3,16 @@ package com.rms.service;
 import com.rms.dto.LoginRequestDTO;
 import com.rms.dto.LoginResponceDTO;
 import com.rms.dto.RegisterRequestDTO;
-import com.rms.model.LocalSeller;
-import com.rms.model.Role;
-import com.rms.model.User;
-import com.rms.model.Wholesaler;
-import com.rms.repository.LocalSellerRepository;
-import com.rms.repository.UserRepository;
-import com.rms.repository.WholesalerRepository;
+import com.rms.model.*;
+import com.rms.repository.*;
 import com.rms.utils.JwtUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,76 +21,87 @@ public class AuthService {
     private final UserRepository userRepository;
     private final WholesalerRepository wholesalerRepository;
     private final LocalSellerRepository localSellerRepository;
+    private final SalesmanRepository salesmanRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public String register(RegisterRequestDTO registerRequestDTO){
+    public String register(RegisterRequestDTO request) {
 
-        if(userRepository.existsByEmail(registerRequestDTO.getEmail())){
+        // 1. Check if email exists
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
-        if(registerRequestDTO.getRole() == null){
-            throw new RuntimeException("Role is required");
-        }
-
+        // 2. Create user - using username from request
         User user = new User();
-        user.setUsername(registerRequestDTO.getName());
-        user.setEmail(registerRequestDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
-        user.setPhone(registerRequestDTO.getPhone());
-        user.setRole(registerRequestDTO.getRole());
+        user.setUsername(request.getUsername());  // ✅ Fixed: using getUsername()
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhone(request.getPhone());
+        user.setRole(request.getRole());
         user.setIsActive(true);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        if(registerRequestDTO.getRole() == Role.WHOLESALER){
-
+        // 3. Create role-specific details
+        if (request.getRole() == Role.WHOLESALER) {
             Wholesaler wholesaler = new Wholesaler();
-            wholesaler.setUser(user);
-            wholesaler.setBusinessName(registerRequestDTO.getBusinessName());
-            wholesaler.setAddress(registerRequestDTO.getAddress());
-            wholesaler.setGstNumber(registerRequestDTO.getGstNumber());
-
+            wholesaler.setUser(savedUser);
+            wholesaler.setBusinessName(request.getBusinessName());
+            wholesaler.setAddress(request.getAddress());
+            wholesaler.setGstNumber(request.getGstNumber());
             wholesalerRepository.save(wholesaler);
-        } else if (registerRequestDTO.getRole()==Role.LOCAL_SELLER) {
 
-            LocalSeller localSeller = new LocalSeller();
-            localSeller.setUser(user);
-            localSeller.setShopName(registerRequestDTO.getShopName());
-            localSeller.setAddress(registerRequestDTO.getAddress());
-            localSeller.setLatitude(registerRequestDTO.getLatitude());
-            localSeller.setLongitude(registerRequestDTO.getLongitude());
+        } else if (request.getRole() == Role.LOCAL_SELLER) {
+            LocalSeller seller = new LocalSeller();
+            seller.setUser(savedUser);
+            seller.setShopName(request.getShopName());
+            seller.setAddress(request.getAddress());
+            seller.setLatitude(request.getLatitude());
+            seller.setLongitude(request.getLongitude());
+            localSellerRepository.save(seller);
 
-            localSellerRepository.save(localSeller);
+        } else if (request.getRole() == Role.SALESMAN) {
+            // Validate wholesaler exists
+            Wholesaler wholesaler = wholesalerRepository.findById(request.getWholesalerId())
+                    .orElseThrow(() -> new RuntimeException("Wholesaler not found with id: " + request.getWholesalerId()));
+
+            Salesman salesman = new Salesman();
+            salesman.setUser(savedUser);
+            salesman.setWholesaler(wholesaler);
+            salesman.setRegion(request.getRegion());
+            salesmanRepository.save(salesman);
         }
 
-        return "Registration successful";
+        return "Registration successful for " + request.getUsername();
     }
 
+    public LoginResponceDTO login(LoginRequestDTO request) {
 
-    @Transactional
-    public LoginResponceDTO login(LoginRequestDTO requestDTO){
-
+        // 1. Authenticate
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        requestDTO.getEmail(),
-                        requestDTO.getPassword()
-                )
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        String role = authentication.getAuthorities()
-                .iterator()
-                .next()
-                .getAuthority();
+        // 2. Get user
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
 
+        // 3. Generate token
         String token = jwtUtil.generateToken(
-                requestDTO.getEmail(),
-                role
+                user.getEmail(),
+                user.getRole().name(),
+                user.getId()
         );
 
-        return new LoginResponceDTO(token, role);
+        // 4. Return response with username
+        return new LoginResponceDTO(
+                token,
+                user.getRole().name(),
+                user.getId(),
+                user.getUsername()  // ✅ Using getUsername() from User entity
+        );
     }
 }

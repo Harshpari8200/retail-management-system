@@ -15,11 +15,12 @@ public interface ProductService {
 
     ProductDTO getProductById(Long id);
 
-    Page<ProductDTO> getAllProducts(Long wholesalerId, Pageable pageable);
-
-    Page<ProductDTO> getProductsByCategory(Long wholesalerId, String category, Pageable pageable);
-
-    Page<ProductDTO> searchProducts(Long wholesalerId, String searchTerm, Pageable pageable);
+    Page<ProductDTO> getFilteredProducts(
+            Long wholesalerId,
+            String category,
+            String searchTerm,
+            Boolean isActive,
+            Pageable pageable);
 
     void deleteProduct(Long id);
 
