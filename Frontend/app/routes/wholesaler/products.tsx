@@ -82,7 +82,7 @@ export async function loader({ request }: { request: Request }) {
   const search = url.searchParams.get("search") || "";
   const category = url.searchParams.get("category") || "all";
 
-  // Default wholesaler ID (should come from auth context in real app)
+  // Default wholesaler ID (will come from auth context in real app)
   const wholesalerId = 1;
 
   try {
@@ -199,16 +199,16 @@ export default function ProductsPage() {
       return newParams;
     });
   };
-  useEffect(() => {
-    if (Array.isArray(initialProducts)) {
-      setProducts(initialProducts);
-    } else {
-      setProducts([]);
-    }
-    if (error) {
-      toast.error(error);
-    }
-  }, [initialProducts, error]);
+  // useEffect(() => {
+  //   if (Array.isArray(initialProducts)) {
+  //     setProducts(initialProducts);
+  //   } else {
+  //     setProducts([]);
+  //   }
+  //   if (error) {
+  //     toast.error(error);
+  //   }
+  // }, [initialProducts, error]);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema) as any,
@@ -273,7 +273,7 @@ export default function ProductsPage() {
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    setIsSubmitting(true);
+    setIsSubmitting(true);//to prevent fro doulble click
     try {
       if (editingProduct && editingProduct.id) {
         await api.updateProduct(1, editingProduct.id, data);
