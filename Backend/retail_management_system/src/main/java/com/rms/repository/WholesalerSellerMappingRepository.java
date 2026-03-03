@@ -1,5 +1,6 @@
 package com.rms.repository;
 
+import com.rms.model.SubscriptionStatus;
 import com.rms.model.WholesalerSellerMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,5 +10,7 @@ public interface WholesalerSellerMappingRepository
         extends JpaRepository<WholesalerSellerMapping, Long> {
 
     List<WholesalerSellerMapping>
-    findByLocalSeller_IdAndStatus(Long localSellerId, String status);
+    findByLocalSeller_IdAndStatus(Long localSellerId, SubscriptionStatus status);
+
+    WholesalerSellerMapping findByLocalSeller_IdAndWholesaler_Id(Long localSellerId, Long wholesalerId);
 }

@@ -20,4 +20,9 @@ public interface LocalSellerService {
 
     // Get products of a mapped wholesaler (paginated)
     Page<ProductDTO> getProductsOfWholesaler(Long localSellerId, Long wholesalerId, Pageable pageable);
+
+
+    void subscribeWholesaler(Long localSellerId, Long wholesalerId);
+
+    void unsubscribeWholesaler(Long localSellerId, Long wholesalerId);
 }
