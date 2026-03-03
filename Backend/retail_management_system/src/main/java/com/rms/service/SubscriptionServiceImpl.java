@@ -21,7 +21,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // Get all pending requests for a wholesaler
     @Override
     public List<SubscriptionDTO> getPendingRequests(Long wholesalerId) {
-        return mappingRepository.findByLocalSeller_IdAndStatus(wholesalerId, SubscriptionStatus.PENDING)
+        return mappingRepository
+                .findByWholesaler_IdAndStatus(wholesalerId, SubscriptionStatus.PENDING)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -54,7 +55,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // Get active local sellers
     @Override
     public List<SubscriptionDTO> getActiveLocalSellers(Long wholesalerId) {
-        return mappingRepository.findByLocalSeller_IdAndStatus(wholesalerId, SubscriptionStatus.APPROVED)
+        return mappingRepository
+                .findByWholesaler_IdAndStatus(wholesalerId, SubscriptionStatus.APPROVED)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());

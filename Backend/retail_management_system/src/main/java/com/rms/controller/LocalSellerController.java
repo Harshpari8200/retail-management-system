@@ -46,7 +46,7 @@ public class LocalSellerController {
     public ResponseEntity<List<WholesalerDTO>> getSubscribedWholesalers(@PathVariable Long localSellerId) {
         log.info("API call: GET /{}/subscribed-wholesalers", localSellerId);
 
-        List<WholesalerDTO> mappedWholesalers = localSellerService.getSubscriptedWholesalers(localSellerId);
+        List<WholesalerDTO> mappedWholesalers = localSellerService.getSubscribedWholesalers(localSellerId);
         return ResponseEntity.ok(mappedWholesalers);
     }
 

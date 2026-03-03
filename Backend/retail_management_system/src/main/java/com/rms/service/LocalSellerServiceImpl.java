@@ -53,7 +53,7 @@ public class LocalSellerServiceImpl implements LocalSellerService {
 
     //  Get only subscribed (mapped) wholesalers
     @Override
-    public List<WholesalerDTO> getSubscriptedWholesalers(Long localSellerId) {
+    public List<WholesalerDTO> getSubscribedWholesalers(Long localSellerId) {
         log.info("Fetching subscribed wholesalers for local seller ID: {}", localSellerId);
         List<WholesalerSellerMapping> mappings =
                 mappingRepository.findByLocalSeller_IdAndStatus(localSellerId, SubscriptionStatus.APPROVED);
@@ -125,8 +125,6 @@ public class LocalSellerServiceImpl implements LocalSellerService {
         mapping.setLocalSeller(localSeller);
         mapping.setWholesaler(wholesaler);
         mapping.setStatus(SubscriptionStatus.PENDING);
-        mappingRepository.save(mapping);
-
         mappingRepository.save(mapping);
     }
 
