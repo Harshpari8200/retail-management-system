@@ -19,7 +19,11 @@ public class WholesalerOrderController {
     private final WholesalerOrderService orderService;
 
     /**
-     * 1. Get all orders for a wholesaler (with optional status filter)
+     * Get all orders for a wholesaler
+     * @param wholesalerId
+     * @param status
+     * @param pageable
+     * @return
      */
     @GetMapping
     public ResponseEntity<Page<OrderResponseDTO>> getOrders(
@@ -32,7 +36,10 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 2. Get only pending orders (quick view)
+     * Get only pending orders
+     * @param wholesalerId
+     * @param pageable
+     * @return
      */
     @GetMapping("/pending")
     public ResponseEntity<Page<OrderResponseDTO>> getPendingOrders(
@@ -44,7 +51,10 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 3. Get single order details
+     * Get single order details
+     * @param wholesalerId
+     * @param orderId
+     * @return
      */
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponseDTO> getOrderDetails(
@@ -55,7 +65,10 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 4. Approve order - returns Approval DTO
+     * Approve order
+     * @param wholesalerId
+     * @param orderId
+     * @return
      */
     @PostMapping("/{orderId}/approve")
     public ResponseEntity<OrderApprovalDTO> approveOrder(
@@ -66,7 +79,11 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 5. Reject order with reason - returns OrderResponseDTO
+     * Reject order with reason
+     * @param wholesalerId
+     * @param orderId
+     * @param rejectionDTO
+     * @return
      */
     @PostMapping("/{orderId}/reject")
     public ResponseEntity<OrderResponseDTO> rejectOrder(
@@ -78,7 +95,11 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 6. Update order status (PROCESSING, SHIPPED, DELIVERED)
+     * Update order status
+     * @param wholesalerId
+     * @param orderId
+     * @param statusUpdate
+     * @return
      */
     @PutMapping("/{orderId}/status")
     public ResponseEntity<OrderResponseDTO> updateOrderStatus(
@@ -91,7 +112,9 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 7. Get dashboard statistics - returns Stats DTO
+     * Get dashboard statistics
+     * @param wholesalerId
+     * @return
      */
     @GetMapping("/stats")
     public ResponseEntity<WholesalerStatsDTO> getStatistics(@RequestParam Long wholesalerId) {
@@ -99,7 +122,10 @@ public class WholesalerOrderController {
     }
 
     /**
-     * 8. Get recent orders preview
+     * Get recent orders preview
+     * @param wholesalerId
+     * @param limit
+     * @return
      */
     @GetMapping("/recent")
     public ResponseEntity<RecentOrdersDTO> getRecentOrders(

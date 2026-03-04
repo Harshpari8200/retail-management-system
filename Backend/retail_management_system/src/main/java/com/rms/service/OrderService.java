@@ -46,104 +46,30 @@ public class OrderService {
      * @param request
      * @return
      */
-//    @Transactional
-//    public OrderResponseDTO placeOrder(OrderRequestDTO request) {
-//
-//        log.info("Placing order for seller: {}", request.getSellerId());
-//
-//        LocalSeller seller = localSellerRepository.findById(request.getSellerId())
-//                .orElseThrow(() -> new ResourceNotFoundException(
-//                        "Seller not found with ID: " + request.getSellerId()
-//                ));
-//
-//        Wholesaler wholesaler = wholesalerRepository.findById(request.getWholesalerId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Wholesaler not found"));
-//
-//        List<OrderItem> orderItems = request.getItems().stream()
-//                .map(itemRequest -> createOrderItem(itemRequest, wholesaler))
-//                .collect(Collectors.toList());
-//
-//        BigDecimal subtotal = orderItems.stream()
-//                .map(OrderItem::getTotal)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//        BigDecimal tax = subtotal.multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
-//        BigDecimal total = subtotal.add(tax);
-//
-//        // Create order using Builder pattern
-//        Order order = new Order();
-//        order.setOrderNumber(generateOrderNumber());
-//        order.setSeller(seller);
-//        order.setWholesaler(wholesaler);
-//        order.setSubtotal(subtotal);
-//        order.setTaxAmount(tax);
-//        order.setTotalAmount(total);
-//        order.setTotalItems(orderItems.size());
-//        order.setStatus(OrderStatus.PENDING);
-//        order.setPaymentMethod(request.getPaymentMethod());
-//        order.setDeliveryAddress(request.getDeliveryAddress() != null ?
-//                request.getDeliveryAddress() : seller.getAddress());
-//        order.setDeliveryInstructions(request.getDeliveryInstructions());
-//
-//        Order savedOrder = orderRepository.save(order);
-//        log.info("Order saved with ID: {}", savedOrder.getId());
-//
-//        // Associate items with order
-//        orderItems.forEach(item -> {
-//            item.setOrder(savedOrder);
-//            orderItemRepository.save(item);
-//            log.info("Saved item for product: {}", item.getProduct().getName());
-//
-//            // Reduce stock
-//            Product product = item.getProduct();
-//            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-//            productRepository.save(product);
-//        });
-//
-//        savedOrder.getItems().size();
-//
-//        // Clear from cart
-//        request.getItems().forEach(itemRequest ->
-//                cartItemRepository.findBySellerIdAndProductId(seller.getId(), itemRequest.getProductId())
-//                        .ifPresent(cartItemRepository::delete)
-//        );
-//
-//        Order orderWithItems = orderRepository.findByIdWithItems(savedOrder.getId())
-//                .orElseThrow(() -> new RuntimeException("Order not found"));
-//
-//        orderWithItems.getItems().size();
-//
-//        Hibernate.initialize(savedOrder.getItems());
-//        log.info("Order after refresh has {} items", orderWithItems.getItems().size());
-//
-//        log.info("Order placed successfully. Order Number: {}", savedOrder.getOrderNumber());
-//
-//        return mapToDTO(orderWithItems);
-//    }
     @Transactional
     public OrderResponseDTO placeOrder(OrderRequestDTO request) {
         log.info("========== PLACING ORDER ==========");
         log.info("Seller ID: {}, Wholesaler ID: {}", request.getSellerId(), request.getWholesalerId());
         log.info("Items count: {}", request.getItems().size());
 
-        // 1. Get seller
+        // Get seller
         LocalSeller seller = localSellerRepository.findById(request.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Seller not found with ID: " + request.getSellerId()
                 ));
 
-        // 2. Get wholesaler
+        // Get wholesaler
         Wholesaler wholesaler = wholesalerRepository.findById(request.getWholesalerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Wholesaler not found"));
 
-        // 3. Create order items
+        // Create order items
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(itemRequest -> createOrderItem(itemRequest, wholesaler))
                 .collect(Collectors.toList());
 
         log.info("Created {} order items", orderItems.size());
 
-        // 4. Calculate totals
+        // Calculate totals
         BigDecimal subtotal = orderItems.stream()
                 .map(OrderItem::getTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -153,7 +79,7 @@ public class OrderService {
 
         log.info("Subtotal: {}, Tax: {}, Total: {}", subtotal, tax, total);
 
-        // 5. Create order
+        // Create order
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
         order.setSeller(seller);
@@ -171,7 +97,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("Order saved with ID: {}", savedOrder.getId());
 
-        // 6. Save items and reduce stock
+        // Save items and reduce stock
         for (OrderItem item : orderItems) {
             item.setOrder(savedOrder);
             OrderItem savedItem = orderItemRepository.save(item);
@@ -183,7 +109,7 @@ public class OrderService {
             productRepository.save(product);
         }
 
-        // 7. Clear from cart
+        // Clear from cart
         request.getItems().forEach(itemRequest ->
                 cartItemRepository.findBySellerIdAndProductId(seller.getId(), itemRequest.getProductId())
                         .ifPresent(cartItem -> {
@@ -192,7 +118,6 @@ public class OrderService {
                         })
         );
 
-        // 8. ✅ FIX: Load items without breaking Hibernate's collection management
         List<OrderItem> itemsFromDb = orderItemRepository.findByOrderId(savedOrder.getId());
         log.info("Manually loaded {} items from database", itemsFromDb.size());
 
@@ -200,13 +125,9 @@ public class OrderService {
         savedOrder.getItems().clear();
         savedOrder.getItems().addAll(itemsFromDb);
 
-        // 9. Verify
         log.info("Final order has {} items", savedOrder.getItems().size());
-
-        // 10. Return response
         OrderResponseDTO response = mapToDTO(savedOrder);
         log.info("Response DTO has {} items", response.getItems().size());
-        log.info("========== ORDER PLACED SUCCESSFULLY ==========");
 
         return response;
     }

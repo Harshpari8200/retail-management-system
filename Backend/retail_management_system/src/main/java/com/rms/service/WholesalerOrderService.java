@@ -39,7 +39,11 @@ public class WholesalerOrderService {
     private final ModelMapper modelMapper;
 
     /**
-     * 1. Get all orders for a wholesaler with optional status filter
+     * Get all orders for a wholesaler with optional status filter
+     * @param wholesalerId
+     * @param status
+     * @param pageable
+     * @return
      */
     public Page<OrderResponseDTO> getOrders(Long wholesalerId, String status, Pageable pageable) {
         log.info("Getting orders for wholesaler: {}, status: {}", wholesalerId, status);
@@ -72,14 +76,21 @@ public class WholesalerOrderService {
     }
 
     /**
-     * 2. Get only pending orders
+     * Get only pending orders
+     * @param wholesalerId
+     * @param pageable
+     * @return
      */
     public Page<OrderResponseDTO> getPendingOrders(Long wholesalerId, Pageable pageable) {
         return getOrders(wholesalerId, "PENDING", pageable);
     }
 
+
     /**
-     * 3. Get single order details
+     * Get single order details
+     * @param wholesalerId
+     * @param orderId
+     * @return
      */
     public OrderResponseDTO getOrderDetails(Long wholesalerId, Long orderId) {
         log.info("Getting order {} for wholesaler {}", orderId, wholesalerId);
@@ -104,8 +115,12 @@ public class WholesalerOrderService {
         return mapToDTO(order);
     }
 
+
     /**
-     * 4. Approve order - returns OrderApprovalDTO
+     * Approve order
+     * @param wholesalerId
+     * @param orderId
+     * @return
      */
     @Transactional
     public OrderApprovalDTO approveOrder(Long wholesalerId, Long orderId) {
@@ -149,7 +164,11 @@ public class WholesalerOrderService {
     }
 
     /**
-     * 5. Reject order with reason
+     * Reject order with reason
+     * @param wholesalerId
+     * @param orderId
+     * @param rejectionDTO
+     * @return
      */
     @Transactional
     public OrderResponseDTO rejectOrder(Long wholesalerId, Long orderId, RejectionDTO rejectionDTO) {
@@ -189,15 +208,9 @@ public class WholesalerOrderService {
 
         // Update order status
         order.setStatus(OrderStatus.REJECTED);
-        // You could add rejection reason to Order entity if needed
-        // order.setRejectionReason(rejectionDTO.getReason());
-        // order.setRejectionComments(rejectionDTO.getComments());
 
         Order savedOrder = orderRepository.save(order);
-        // If you need items in the response, fetch them fresh
         List<OrderItem> refreshedItems = orderItemRepository.findByOrderId(savedOrder.getId());
-
-        // ✅ SAFE WAY: Clear and add
         savedOrder.getItems().clear();
         savedOrder.getItems().addAll(refreshedItems);
 
@@ -205,7 +218,11 @@ public class WholesalerOrderService {
     }
 
     /**
-     * 6. Update order status (PROCESSING, SHIPPED, DELIVERED)
+     * Update order status
+     * @param wholesalerId
+     * @param orderId
+     * @param statusUpdate
+     * @return
      */
     @Transactional
     public OrderResponseDTO updateOrderStatus(Long wholesalerId, Long orderId, StatusUpdateDTO statusUpdate) {
@@ -247,12 +264,10 @@ public class WholesalerOrderService {
             order.setDeliveredAt(LocalDateTime.now());
         }
 
-        // Handle shipping tracking
-        if (status == OrderStatus.SHIPPED && statusUpdate.getTrackingNumber() != null) {
-            // You could add trackingNumber field to Order entity
-            // order.setTrackingNumber(statusUpdate.getTrackingNumber());
-            // order.setEstimatedDelivery(statusUpdate.getEstimatedDelivery());
-        }
+//        // Handle shipping tracking
+//        if (status == OrderStatus.SHIPPED && statusUpdate.getTrackingNumber() != null) {
+//            //done whene selsman module impl
+//        }
 
         Order savedOrder = orderRepository.save(order);
 
@@ -267,7 +282,9 @@ public class WholesalerOrderService {
     }
 
     /**
-     * 7. Get dashboard statistics - returns WholesalerStatsDTO
+     * Get dashboard statistics
+     * @param wholesalerId
+     * @return
      */
     public WholesalerStatsDTO getStatistics(Long wholesalerId) {
         log.info("Getting statistics for wholesaler: {}", wholesalerId);
@@ -323,7 +340,6 @@ public class WholesalerOrderService {
                 .count();
 
         // Get product statistics
-        // In your WholesalerOrderService
         Long totalProducts = productRepository.count(
                 ProductSpecification.byWholesalerId(wholesalerId)
         );
@@ -381,7 +397,10 @@ public class WholesalerOrderService {
     }
 
     /**
-     * 8. Get recent orders preview
+     * Get recent orders preview
+     * @param wholesalerId
+     * @param limit
+     * @return
      */
     public RecentOrdersDTO getRecentOrders(Long wholesalerId, int limit) {
         log.info("Getting recent {} orders for wholesaler: {}", limit, wholesalerId);
@@ -426,8 +445,15 @@ public class WholesalerOrderService {
                 .build();
     }
 
-    // ==================== HELPER METHODS ====================
 
+    /**
+     * helper method
+     * for calculete revenue
+     * @param wholesalerId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
     private BigDecimal calculateRevenue(Long wholesalerId, LocalDateTime startDate, LocalDateTime endDate) {
         Specification<Order> spec = Specification
                 .where(OrderSpecification.byWholesalerId(wholesalerId))
@@ -444,6 +470,13 @@ public class WholesalerOrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    /**
+     * helper method
+     * get revenur by day wise
+     * @param wholesalerId
+     * @param days
+     * @return
+     */
     private Map<String, BigDecimal> getRevenueByDay(Long wholesalerId, int days) {
         Map<String, BigDecimal> revenueByDay = new LinkedHashMap<>();
         LocalDate today = LocalDate.now();
@@ -460,6 +493,11 @@ public class WholesalerOrderService {
         return revenueByDay;
     }
 
+    /**
+     * helper method for finding top sellers
+     * @param wholesalerId
+     * @return
+     */
     private List<TopSellerDTO> getTopSellers(Long wholesalerId) {
         // This is a simplified version - you might want to optimize with a native query
         Specification<Order> spec = OrderSpecification.byWholesalerId(wholesalerId)
@@ -501,6 +539,12 @@ public class WholesalerOrderService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * helper method for geting recent order preview
+     * @param wholesalerId
+     * @param limit
+     * @return
+     */
     private List<OrderPreviewDTO> getRecentOrdersPreview(Long wholesalerId, int limit) {
         Specification<Order> spec = OrderSpecification.byWholesalerId(wholesalerId);
         Pageable topN = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -518,6 +562,7 @@ public class WholesalerOrderService {
                 .collect(Collectors.toList());
     }
 
+
     private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
         return switch (current) {
             case PENDING -> next == OrderStatus.APPROVED || next == OrderStatus.REJECTED;
@@ -527,6 +572,7 @@ public class WholesalerOrderService {
             default -> false;
         };
     }
+
 
     private OrderResponseDTO mapToDTO(Order order) {
         OrderResponseDTO dto = modelMapper.map(order, OrderResponseDTO.class);

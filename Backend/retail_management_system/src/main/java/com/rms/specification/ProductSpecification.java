@@ -5,7 +5,6 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,55 +35,6 @@ public class ProductSpecification {
     public static Specification<Product> outOfStock() {
         return (root, query, cb) ->
                 cb.equal(root.get("stockQuantity"), 0);
-    }
-
-    /**
-     * Filter by active products only
-     */
-    public static Specification<Product> activeOnly() {
-        return (root, query, cb) -> cb.isTrue(root.get("isActive"));
-    }
-
-    /**
-     * Filter by category
-     */
-    public static Specification<Product> byCategory(String category) {
-        return (root, query, cb) -> {
-            if (!StringUtils.hasText(category)) return cb.conjunction();
-            return cb.equal(cb.lower(root.get("category")), category.toLowerCase());
-        };
-    }
-
-    /**
-     * Filter by price range
-     */
-    public static Specification<Product> priceBetween(BigDecimal minPrice, BigDecimal maxPrice) {
-        return (root, query, cb) -> {
-            if (minPrice != null && maxPrice != null) {
-                return cb.between(root.get("price"), minPrice, maxPrice);
-            } else if (minPrice != null) {
-                return cb.greaterThanOrEqualTo(root.get("price"), minPrice);
-            } else if (maxPrice != null) {
-                return cb.lessThanOrEqualTo(root.get("price"), maxPrice);
-            }
-            return cb.conjunction();
-        };
-    }
-
-    /**
-     * Search by name, description, or SKU
-     */
-    public static Specification<Product> search(String searchTerm) {
-        return (root, query, cb) -> {
-            if (!StringUtils.hasText(searchTerm)) return cb.conjunction();
-
-            String pattern = "%" + searchTerm.toLowerCase() + "%";
-            return cb.or(
-                    cb.like(cb.lower(root.get("name")), pattern),
-                    cb.like(cb.lower(root.get("description")), pattern),
-                    cb.like(cb.lower(root.get("skuCode")), pattern)
-            );
-        };
     }
 
     /**
