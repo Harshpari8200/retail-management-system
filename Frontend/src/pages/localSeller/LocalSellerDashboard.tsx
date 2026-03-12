@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Store, Package, Clock3, TrendingUp } from "lucide-react";
 import { api } from "../../services/api";
+import { Loader2 } from "lucide-react";
 
 type Tone = "blue" | "amber" | "green" | "red";
 
@@ -19,7 +20,7 @@ function StatCard({
   tone,
 }: {
   label: string;
-  value: number | string;
+  value: number | string | React.ReactNode;
   helper: string;
   icon: React.ReactNode;
   tone: Tone;
@@ -96,10 +97,9 @@ export function LocalSellerDashboard() {
           label="Total Wholesalers"
           value={
             loadingWholesalers
-              ? "Loading..."
-              : wholesalersError
-                ? "—"
-                : totalWholesalers
+              ? (
+                <Loader2 className="animate-spin h-5 w-5 text-blue-500" />
+              ) : wholesalersError ? "—" : totalWholesalers
           }
           helper={
             wholesalersError

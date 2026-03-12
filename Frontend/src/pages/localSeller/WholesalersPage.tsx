@@ -3,6 +3,7 @@ import { api } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 export function WholesalersPage() {
   const { user } = useAuth();
@@ -35,9 +36,9 @@ export function WholesalersPage() {
 
   if (loading) {
     return (
-      <div className="rounded-lg border bg-white p-4 shadow-sm">
-        Loading wholesalers...
-      </div>
+      <div className="flex justify-center items-center h-40">
+      <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
+    </div>
     );
   }
 
