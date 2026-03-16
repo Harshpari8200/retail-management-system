@@ -37,6 +37,12 @@ export interface RegisterRequest {
   longitude?: number;
 }
 
+export interface Wholesaler {
+  id: number;
+  username: string;
+  businessName: string;
+}
+
 export interface Product {
   id?: number;
   version?: number;
@@ -287,7 +293,7 @@ class ApiService {
         size,
       },
     });
-  
+
     return {
       content: res.products || [],
       totalPages: res.totalPages,
@@ -328,9 +334,11 @@ class ApiService {
     );
   }
 
-  async getSubscribedWholesalers(localSellerId: number): Promise<any[]> {
-    return this.request<any[]>(
-      `/local-seller/${localSellerId}/subscribed-wholesalers`,
+  async getSubscribedWholesalers(
+    sellerId: number
+  ): Promise<Wholesaler []> {
+    return this.request<Wholesaler []>(
+      `/local-seller/${sellerId}/subscribed-wholesalers`
     );
   }
 
@@ -353,6 +361,7 @@ class ApiService {
       { method: "DELETE" },
     );
   }
+
 }
 
 export const api = new ApiService();

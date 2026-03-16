@@ -35,6 +35,7 @@ const navigation: NavItem[] = [
     icon: Package,
     available: false,
   },
+  
   {
     name: "Payments",
     href: "/local-seller/payments",

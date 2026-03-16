@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {api} from '../../../services/api';
+import { api, type Product } from '../../../services/api';
 
 export function WholesalerViews() {
   const { id } = useParams();
@@ -9,25 +9,40 @@ export function WholesalerViews() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cart, setCart] = useState<Product[]>([]);
+  const [userApproved, setUserApproved] = useState(false);
 
+//   async function checkUserApproval() {
+//   try {
+//     const res = await api.getSubscriptionStatus(userId, wholesalerId);
+//     setUserApproved(res.status === "APPROVED");
+//   } catch {
+//     setUserApproved(false);
+//   }
+// }
+  
   useEffect(() => {
     if (!wholesalerId) return;
 
     loadProducts();
-  }, [wholesalerId]);
 
+  }, [wholesalerId]);
+  
   async function loadProducts() {
     try {
       setLoading(true);
       setError(null);
 
-      const page = await api.getProducts(wholesalerId, 0, 100);
-      setProducts(page.content ?? []);
+      const page = await api.getWholesalerProducts(wholesalerId);
+      setProducts(page ?? []);
     } catch (err: any) {
       setError(err?.message ?? "Failed to load products");
     } finally {
       setLoading(false);
     }
+  }
+  function addToCart(product: Product) {
+    setCart((prev) => [...prev, product]);
   }
 
   return (
@@ -49,57 +64,59 @@ export function WholesalerViews() {
         </div>
       )}
 
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-semibold text-slate-900">
+          Wholesaler Products
+        </h1>
+
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg">
+          Cart ({cart.length})
+        </button>
+      </div>
+
       {/* Table */}
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Stock</th>
-            </tr>
-          </thead>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md"
+            >
+              <h3 className="text-lg font-semibold text-slate-900">
+                {product.name}
+              </h3>
 
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                  Loading products...
-                </td>
-              </tr>
-            ) : products.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                  No products available.
-                </td>
-              </tr>
-            ) : (
-              products.map((product) => (
-                <tr
-                  key={product.id}
-                  className="border-b last:border-none hover:bg-slate-50"
-                >
-                  <td className="px-4 py-3 text-slate-900">
-                    {product.name}
-                  </td>
+              <p className="text-sm text-slate-500">
+                {product.category}
+              </p>
 
-                  <td className="px-4 py-3 text-slate-600">
-                    {product.category}
-                  </td>
+              <p className="text-slate-700 mt-2">
+                ₹{product.price.toLocaleString("en-IN")}
+              </p>
 
-                  <td className="px-4 py-3 text-slate-900">
-                    ₹{product.price.toLocaleString("en-IN")}
-                  </td>
+              <p className="text-xs text-slate-500">
+                Stock: {product.stockQuantity}
+              </p>
 
-                  <td className="px-4 py-3 text-slate-600">
-                    {product.stockQuantity}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              <button
+                onClick={() => userApproved && addToCart(product)}
+                disabled={!userApproved}
+                className={`mt-3 w-full py-2 rounded-lg ${userApproved
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  }`}
+              >
+                Add to Cart
+              </button>
+
+              {!userApproved && (
+                <p className="text-xs text-red-500 mt-1">
+                  Add to cart available after approval
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

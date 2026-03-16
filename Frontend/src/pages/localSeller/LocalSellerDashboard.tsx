@@ -50,6 +50,8 @@ export function LocalSellerDashboard() {
   const [wholesalers, setWholesalers] = useState<any[]>([]);
   const [loadingWholesalers, setLoadingWholesalers] = useState(false);
   const [wholesalersError, setWholesalersError] = useState<string | null>(null);
+  const [subscribedWholesalers, setSubscribedWholesalers] = useState<any[]>([]);
+  const [loadingSubscribed, setLoadingSubscribed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -70,7 +72,26 @@ export function LocalSellerDashboard() {
       }
     };
 
+
+    const loadSubscribedWholesalers = async () => {
+      try {
+        setLoadingSubscribed(true);
+
+        const sellerId = Number(localStorage.getItem("userId"));
+        const res = await api.getSubscribedWholesalers(sellerId);
+
+        if (!active) return;
+
+        setSubscribedWholesalers(res ?? []);
+      } catch (err) {
+        console.error("Failed to load subscribed wholesalers");
+      } finally {
+        if (active) setLoadingSubscribed(false);
+      }
+    };
+
     loadWholesalers();
+    loadSubscribedWholesalers();
 
     return () => {
       active = false;
@@ -78,6 +99,7 @@ export function LocalSellerDashboard() {
   }, []);
 
   const totalWholesalers = wholesalers.length;
+  const totalSubscribed = subscribedWholesalers.length;
 
   return (
     <div className="space-y-6">
@@ -108,6 +130,17 @@ export function LocalSellerDashboard() {
           }
           icon={<Store className="h-5 w-5" />}
           tone="blue"
+        />
+        <StatCard
+          label="Subscribed Wholesalers"
+          value={
+            loadingSubscribed ? (
+              <Loader2 className="animate-spin h-5 w-5 text-blue-500" />
+            ) : totalSubscribed
+          }
+          helper="Wholesalers you are connected with"
+          icon={<Store className="h-5 w-5" />}
+          tone="green"
         />
 
         <StatCard

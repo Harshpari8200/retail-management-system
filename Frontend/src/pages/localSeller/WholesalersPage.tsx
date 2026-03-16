@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
 import { api } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
-import { Button } from "../../components/ui/button";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+
+type SubscriptionStatus = "NONE" | "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE";
 
 export function WholesalersPage() {
+
+
+  const [wholesalers, setWholesalers] = useState<any[]>([]);
+  const [statuses, setStatuses] = useState<Record<number, SubscriptionStatus>>({});
+  const [loading, setLoading] = useState(true);
+
   const { user } = useAuth();
   const sellerId = user?.id;
 
-  const [wholesalers, setWholesalers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     loadWholesalers();
+    loadSubscribedWholesalers();
   }, []);
 
   async function loadWholesalers() {
@@ -27,18 +32,65 @@ export function WholesalersPage() {
     }
   }
 
-  async function subscribe(wholesalerId: number) {
-    if (!sellerId) return;
+  async function loadSubscribedWholesalers() {
+  if (!sellerId) return;
 
-    await api.subscribeWholesaler(sellerId, wholesalerId);
-    alert("Subscription request sent");
+  try {
+    const subscribed = await api.getSubscribedWholesalers(sellerId); // returns array
+    const statusMap: Record<number, SubscriptionStatus> = {};
+
+    subscribed.forEach((w: any) => {
+      statusMap[w.id] = w.status as SubscriptionStatus;
+    });
+
+    setStatuses(statusMap);
+  } catch (err: any) {
+    console.error("Failed to load subscriptions:", err.message);
   }
+}
+
+  // Subscribe
+  async function handleSubscribe(id: number) {
+    if (!sellerId) return;
+    setStatuses((prev) => ({ ...prev, [id]: "PENDING" }));
+    try {
+      await api.subscribeWholesaler(sellerId, id);
+    } catch (err: any) {
+      console.error(err.message);
+      setStatuses((prev) => ({ ...prev, [id]: "NONE" }));
+    }
+  }
+
+  // Cancel subscription request
+  async function handleCancel(id: number) {
+    if (!sellerId) return;
+    setStatuses((prev) => ({ ...prev, [id]: "NONE" }));
+    try {
+      await api.unsubscribeWholesaler(sellerId, id);
+    } catch (err: any) {
+      console.error(err.message);
+      setStatuses((prev) => ({ ...prev, [id]: "PENDING" }));
+    }
+  }
+
+  // Unsubscribe approved
+  async function handleUnsubscribe(id: number) {
+    if (!sellerId) return;
+    setStatuses((prev) => ({ ...prev, [id]: "INACTIVE" }));
+    try {
+      await api.unsubscribeWholesaler(sellerId, id);
+    } catch (err: any) {
+      console.error(err.message);
+      setStatuses((prev) => ({ ...prev, [id]: "APPROVED" }));
+    }
+  }
+
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
-      <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
-    </div>
+        <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
+      </div>
     );
   }
 
@@ -70,33 +122,88 @@ export function WholesalersPage() {
                 className="border-b last:border-none hover:bg-slate-50"
               >
                 <td className="px-4 py-3 text-slate-900">
-                  {w.username}
+                  {w.Username}
                 </td>
 
                 <td className="px-4 py-3 text-slate-600">
                   {w.businessName}
                 </td>
 
-                <td className="px-4 py-3 text-right space-x-2">
+                <td className="px-4 py-3 flex justify-end items-center gap-2">
+
+                  {/* View Products always visible */}
                   <Link
                     to={`/local-seller/wholesalers/${w.id}`}
                     className="text-blue-600 text-sm font-medium hover:underline"
                   >
-                    View
+                    View Products
                   </Link>
 
-                  <Button
-                    size="sm"
-                    onClick={() => subscribe(w.id)}
-                  >
-                    Subscribe
-                  </Button>
+                  {/* NOT SUBSCRIBED */}
+                  {(!statuses[w.id] || statuses[w.id] === "NONE") && (
+                    <button
+                      onClick={() => handleSubscribe(w.id)}
+                      className="ml-2 bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition"
+                    >
+                      Subscribe
+                    </button>
+                  )}
+
+                  {/* PENDING */}
+                  {statuses[w.id] === "PENDING" && (
+                    <>
+                      <button
+                        disabled
+                        className="ml-2 bg-amber-400 text-white px-3 py-1.5 rounded-md text-sm cursor-not-allowed opacity-80"
+                      >
+                        Pending
+                      </button>
+
+                      <button
+                        onClick={() => handleCancel(w.id)}
+                        className="ml-2 bg-red-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-700 transition"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+
+                  {/* APPROVED */}
+                  {statuses[w.id] === "APPROVED" && (
+                    <>
+                      <button
+                        disabled
+                        className="ml-2 bg-green-500 text-white px-3 py-1.5 rounded-md text-sm cursor-not-allowed opacity-80"
+                      >
+                        Subscribed
+                      </button>
+
+                      <button
+                        onClick={() => handleUnsubscribe(w.id)}
+                        className="ml-2 bg-red-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-700 transition"
+                      >
+                        Unsubscribe
+                      </button>
+                    </>
+                  )}
+
+                  {/* REJECTED / INACTIVE */}
+                  {(statuses[w.id] === "REJECTED" || statuses[w.id] === "INACTIVE") && (
+                    <button
+                      onClick={() => handleSubscribe(w.id)}
+                      className="ml-2 bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition"
+                    >
+                      Subscribe Again
+                    </button>
+                  )}
+
                 </td>
+
               </tr>
             ))}
           </tbody>
         </table>
       </section>
-    </div>
+    </div >
   );
 }
