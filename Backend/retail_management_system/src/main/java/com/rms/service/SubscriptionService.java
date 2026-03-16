@@ -1,15 +1,29 @@
 package com.rms.service;
 
 import com.rms.dto.SubscriptionDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface SubscriptionService {
 
-    List<SubscriptionDTO> getPendingRequests(Long wholesalerId);
+    // whole saler side
+    Page<SubscriptionDTO> getPendingRequests(Long wholesalerId,Pageable pageable);
 
-    void approveSubscription(Long wholesalerId, Long localSellerId);
+    SubscriptionDTO approveSubscription(Long wholesalerId, Long localSellerId);
 
-    void rejectSubscription(Long wholesalerId, Long localSellerId);
+    SubscriptionDTO rejectSubscription(Long wholesalerId, Long localSellerId);
 
-    List<SubscriptionDTO> getActiveLocalSellers(Long wholesalerId);
+    Page<SubscriptionDTO> getActiveSubscriptions(Long wholesalerId,Pageable pageable);
+
+    //Local seller side
+
+    Page<SubscriptionDTO> getSellerPendingSubscriptions(Long localSellerId, Pageable pageable);
+
+    SubscriptionDTO getSubscriptionStatus(Long localSellerId, Long wholesalerId);
+
+    void cancelSubscription(Long localSellerId, Long wholesalerId);
+
+    // Utility
+    boolean isSubscribed(Long localSellerId, Long wholesalerId);
 }

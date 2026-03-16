@@ -3,11 +3,12 @@ package com.rms.repository;
 import com.rms.model.SubscriptionStatus;
 import com.rms.model.WholesalerSellerMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
 
 public interface WholesalerSellerMappingRepository
-        extends JpaRepository<WholesalerSellerMapping, Long> {
+        extends JpaRepository<WholesalerSellerMapping, Long>, JpaSpecificationExecutor<WholesalerSellerMapping> {
 
     // For Local Seller side
     List<WholesalerSellerMapping>
