@@ -15,4 +15,5 @@ public interface WholesalerRepository extends
     boolean existsByUserId(Long userId);
     Optional<Wholesaler> findByGstNumber(String gstNumber);
     List<Wholesaler> findByIsActiveTrue();
+
 }

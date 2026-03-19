@@ -37,6 +37,13 @@ export interface RegisterRequest {
   longitude?: number;
 }
 
+export interface Wholesaler {
+  id: number;
+  username: string;
+  businessName: string;
+ 
+}
+
 export interface Product {
   id?: number;
   version?: number;
@@ -287,7 +294,7 @@ class ApiService {
         size,
       },
     });
-  
+
     return {
       content: res.products || [],
       totalPages: res.totalPages,
@@ -328,9 +335,11 @@ class ApiService {
     );
   }
 
-  async getSubscribedWholesalers(localSellerId: number): Promise<any[]> {
-    return this.request<any[]>(
-      `/local-seller/${localSellerId}/subscribed-wholesalers`,
+  async getSubscribedWholesalers(
+    sellerId: number
+  ): Promise<any> {
+    return this.request(
+      `/local-seller/${sellerId}/subscribed-wholesalers`
     );
   }
 
@@ -353,6 +362,34 @@ class ApiService {
       { method: "DELETE" },
     );
   }
+
+  // GET SUBSCRIPTION STATUS
+  async getSubscriptionStatus(
+  localSellerId: number,
+  wholesalerId: number
+): Promise<any> {
+  return this.request<any>(
+    `/subscriptions/status?localSellerId=${localSellerId}&wholesalerId=${wholesalerId}`
+  );
+}
+
+// cancel subscriiption
+async cancelSubscription(
+  localSellerId: number,
+  wholesalerId: number
+): Promise<void> {
+  return this.request(
+    `/subscriptions/seller/${localSellerId}/cancel/${wholesalerId}`,
+    { method: "DELETE" }
+  );
+}
+
+async getAllProductsForSeller(): Promise<Product[]> {
+  return this.request(`/local-seller/products`);
+}
+
+
+
 }
 
 export const api = new ApiService();

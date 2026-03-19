@@ -1,8 +1,12 @@
 package com.rms.dto;
 
-import lombok.Data;
+import com.rms.model.enums.SubscriptionStatus;
+import lombok.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class WholesalerDTO {
 
     private Long id;
@@ -15,7 +19,8 @@ public class WholesalerDTO {
 
     private Boolean isActive;
 
-    // Optional: basic user info (if needed for display)
-//    private String username;
-//    private String email;
+    private SubscriptionStatus status;
+
+    private String username;
+
 }

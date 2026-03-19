@@ -20,12 +20,4 @@ public class LocalSeller {
     private String shopName;
 
     private String address;
-
-    private Double latitude;
-
-    private Double longitude;
-
-    public String getusername() {
-        return user.getUsername();
-    }
 }

@@ -1,12 +1,16 @@
 package com.rms.controller;
 
+import com.rms.constants.MessageKeys;
 import com.rms.dto.ProductDTO;
 import com.rms.dto.WholesalerDTO;
 import com.rms.service.LocalSellerService;
+import com.rms.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +23,7 @@ import java.util.List;
 public class LocalSellerController {
 
     private final LocalSellerService localSellerService;
+    private final MessageService messageService;
 
     /*  Get all active wholesalers */
 
@@ -40,13 +45,15 @@ public class LocalSellerController {
         return ResponseEntity.ok(products);
     }
 
-    /*  Get only subscribed (mapped) wholesalers of a local seller */
-
+    /*  Get subscribed wholesalers with pagination */
     @GetMapping("/{localSellerId}/subscribed-wholesalers")
-    public ResponseEntity<List<WholesalerDTO>> getSubscribedWholesalers(@PathVariable Long localSellerId) {
+    public ResponseEntity<Page<WholesalerDTO>> getSubscribedWholesalers(
+            @PathVariable Long localSellerId,
+            @PageableDefault(size = 10, sort = "wholesaler.businessName", direction = Sort.Direction.ASC)
+            Pageable pageable) {                                    // ADD Pageable
         log.info("API call: GET /{}/subscribed-wholesalers", localSellerId);
-
-        List<WholesalerDTO> mappedWholesalers = localSellerService.getSubscribedWholesalers(localSellerId);
+        Page<WholesalerDTO> mappedWholesalers = localSellerService.getSubscribedWholesalers(
+                localSellerId, pageable);                               // Pass pageable
         return ResponseEntity.ok(mappedWholesalers);
     }
 
@@ -58,7 +65,7 @@ public class LocalSellerController {
             @PathVariable Long wholesalerId) {
 
         localSellerService.subscribeWholesaler(localSellerId, wholesalerId);
-        return ResponseEntity.ok("Subscribed successfully");
+        return ResponseEntity.ok(messageService.get(MessageKeys.SUBSCRIPTION_REQUEST_SENT));
     }
 
     /* unsubscribe whole saller */
@@ -68,20 +75,19 @@ public class LocalSellerController {
             @PathVariable Long wholesalerId) {
 
         localSellerService.unsubscribeWholesaler(localSellerId, wholesalerId);
-        return ResponseEntity.ok("Unsubscribed successfully");
+        return ResponseEntity.ok(messageService.get(MessageKeys.UNSUBSCRIBE_SUCCESS));
     }
 
     /*  Get products of a mapped wholesaler (paginated) */
-
     @GetMapping("/{localSellerId}/wholesalers/{wholesalerId}/products/paged")
     public ResponseEntity<Page<ProductDTO>> getProductsOfMappedWholesaler(
             @PathVariable Long localSellerId,
             @PathVariable Long wholesalerId,
             Pageable pageable) {
-
         log.info("API call: GET /{}/wholesalers/{}/products/paged", localSellerId, wholesalerId);
-
-        Page<ProductDTO> productsPage = localSellerService.getProductsOfWholesaler(localSellerId, wholesalerId, pageable);
+        Page<ProductDTO> productsPage = localSellerService.getProductsOfWholesaler(
+                localSellerId, wholesalerId, pageable);
         return ResponseEntity.ok(productsPage);
     }
+
 }
