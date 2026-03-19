@@ -3,7 +3,7 @@ package com.rms.service;
 import com.rms.constants.MessageKeys;
 import com.rms.dto.SubscriptionDTO;
 import com.rms.exception.ResourceNotFoundException;
-import com.rms.model.SubscriptionStatus;
+import com.rms.model.enums.SubscriptionStatus;
 import com.rms.model.WholesalerSellerMapping;
 import com.rms.repository.LocalSellerRepository;
 import com.rms.repository.WholesalerRepository;

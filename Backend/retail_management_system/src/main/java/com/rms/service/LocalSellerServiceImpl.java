@@ -4,6 +4,7 @@ import com.rms.constants.MessageKeys;
 import com.rms.dto.ProductDTO;
 import com.rms.dto.WholesalerDTO;
 import com.rms.model.*;
+import com.rms.model.enums.SubscriptionStatus;
 import com.rms.repository.*;
 import com.rms.specification.ProductSpecification;
 import com.rms.specification.WholesalerSellerSpecification;
@@ -41,7 +42,7 @@ public class LocalSellerServiceImpl implements LocalSellerService {
 
         return wholesalerRepository.findByIsActiveTrue()
                 .stream()
-                .map(w -> modelMapper.map(w, WholesalerDTO.class))
+                .map(this::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -74,14 +75,16 @@ public class LocalSellerServiceImpl implements LocalSellerService {
         }
 
         Specification<WholesalerSellerMapping> spec =
-                Specification.where(WholesalerSellerSpecification.byLocalSellerId(localSellerId))
-                        .and(WholesalerSellerSpecification.byStatus(SubscriptionStatus.APPROVED));
+                Specification.where(WholesalerSellerSpecification.byLocalSellerId(localSellerId));
+
 
         Page<WholesalerSellerMapping> mappings = mappingRepository.findAll(spec, pageable);
 
-        return mappings.map(mapping ->
-                modelMapper.map(mapping.getWholesaler(), WholesalerDTO.class)
-        );
+        return mappings.map(mapping -> {
+            WholesalerDTO dto = modelMapper.map(mapping.getWholesaler(), WholesalerDTO.class);
+            dto.setStatus(mapping.getStatus());
+            return dto;
+        });
 
     }
 
@@ -182,5 +185,16 @@ public class LocalSellerServiceImpl implements LocalSellerService {
        mapping.setStatus(SubscriptionStatus.INACTIVE);
         mappingRepository.save(mapping);
         log.info("Subscription marked inactive for localSeller {} and wholesaler {}", localSellerId, wholesalerId);
+    }
+
+    public WholesalerDTO fromEntity(Wholesaler wholesaler) {
+        return WholesalerDTO.builder()
+                .id(wholesaler.getId())
+                .businessName(wholesaler.getBusinessName())
+                .address(wholesaler.getAddress())
+                .gstNumber(wholesaler.getGstNumber())
+                .isActive(wholesaler.getIsActive())
+                .username(wholesaler.getUser() != null ? wholesaler.getUser().getUsername() : null)
+                .build();
     }
 }

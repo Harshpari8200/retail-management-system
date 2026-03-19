@@ -3,13 +3,12 @@ package com.rms.service;
 
 import com.rms.dto.*;
 import com.rms.exception.ResourceNotFoundException;
-import com.rms.model.OrderStatus;
+import com.rms.model.enums.OrderStatus;
 import com.rms.model.*;
 import com.rms.repository.*;
 import com.rms.specification.OrderSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

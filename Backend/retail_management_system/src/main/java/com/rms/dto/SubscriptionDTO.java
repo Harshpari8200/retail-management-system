@@ -1,6 +1,6 @@
 package com.rms.dto;
 
-import com.rms.model.SubscriptionStatus;
+import com.rms.model.enums.SubscriptionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

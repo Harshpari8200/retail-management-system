@@ -4,6 +4,7 @@ import com.rms.dto.LoginRequestDTO;
 import com.rms.dto.LoginResponceDTO;
 import com.rms.dto.RegisterRequestDTO;
 import com.rms.model.*;
+import com.rms.model.enums.Role;
 import com.rms.repository.*;
 import com.rms.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -59,8 +60,6 @@ public class AuthService {
             seller.setUser(savedUser);
             seller.setShopName(request.getShopName());
             seller.setAddress(request.getAddress());
-            seller.setLatitude(request.getLatitude());
-            seller.setLongitude(request.getLongitude());
             localSellerRepository.save(seller);
 
         } else if (request.getRole() == Role.SALESMAN) {

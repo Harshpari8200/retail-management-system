@@ -1,6 +1,6 @@
 package com.rms.specification;
 
-import com.rms.model.SubscriptionStatus;
+import com.rms.model.enums.SubscriptionStatus;
 import com.rms.model.WholesalerSellerMapping;
 import org.springframework.data.jpa.domain.Specification;
 
