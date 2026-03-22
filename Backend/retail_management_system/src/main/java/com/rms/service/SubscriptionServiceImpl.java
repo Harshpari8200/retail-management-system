@@ -88,6 +88,38 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return convertToDTO(saved, messageService.get(MessageKeys.SUBSCRIPTION_REJECTED));
     }
 
+    @Override
+    public SubscriptionDTO acceptSubscription(Long subscriptionId) {
+        log.info("Accepting subscription request id: {}", subscriptionId);
+
+        WholesalerSellerMapping mapping = mappingRepository.findById(subscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found with id: " + subscriptionId));
+
+        if (mapping.getStatus() != SubscriptionStatus.PENDING) {
+            throw new IllegalArgumentException("Only pending subscriptions can be approved");
+        }
+
+        mapping.setStatus(SubscriptionStatus.APPROVED);
+        WholesalerSellerMapping saved = mappingRepository.save(mapping);
+        return convertToDTO(saved, messageService.get(MessageKeys.SUBSCRIPTION_APPROVED));
+    }
+
+    @Override
+    public SubscriptionDTO rejectSubscriptionById(Long subscriptionId) {
+        log.info("Rejecting subscription request id: {}", subscriptionId);
+
+        WholesalerSellerMapping mapping = mappingRepository.findById(subscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found with id: " + subscriptionId));
+
+        if (mapping.getStatus() != SubscriptionStatus.PENDING) {
+            throw new IllegalArgumentException("Only pending subscriptions can be rejected");
+        }
+
+        mapping.setStatus(SubscriptionStatus.REJECTED);
+        WholesalerSellerMapping saved = mappingRepository.save(mapping);
+        return convertToDTO(saved, messageService.get(MessageKeys.SUBSCRIPTION_REJECTED));
+    }
+
     // Get active local sellers
     @Override
     public Page<SubscriptionDTO> getActiveSubscriptions(Long wholesalerId, Pageable pageable) {

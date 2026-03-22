@@ -33,6 +33,32 @@ public class SubscriptionController {
         return ResponseEntity.ok(pending);
     }
 
+    @GetMapping("/wholesaler/subscription-requests")
+    public ResponseEntity<Page<SubscriptionDTO>> getSubscriptionRequestsForWholesaler(
+            @RequestParam Long wholesalerId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        log.info("API: GET /wholesaler/subscription-requests for wholesaler {}", wholesalerId);
+        Page<SubscriptionDTO> pending = subscriptionService.getPendingRequests(wholesalerId, pageable);
+        return ResponseEntity.ok(pending);
+    }
+
+    @PostMapping("/{subscriptionId}/accept")
+    public ResponseEntity<SubscriptionDTO> acceptSubscriptionById(
+            @PathVariable Long subscriptionId) {
+        log.info("API: POST /subscriptions/{}/accept", subscriptionId);
+        SubscriptionDTO subscription = subscriptionService.acceptSubscription(subscriptionId);
+        return ResponseEntity.ok(subscription);
+    }
+
+    @PostMapping("/{subscriptionId}/reject")
+    public ResponseEntity<SubscriptionDTO> rejectSubscriptionById(
+            @PathVariable Long subscriptionId) {
+        log.info("API: POST /subscriptions/{}/reject", subscriptionId);
+        SubscriptionDTO subscription = subscriptionService.rejectSubscriptionById(subscriptionId);
+        return ResponseEntity.ok(subscription);
+    }
+
     /**
      * 2. Approve a subscription request
      */
