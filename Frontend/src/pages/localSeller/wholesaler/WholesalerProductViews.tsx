@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api, type Product } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
+import { cartService } from '../../../services/cartService';
 import { Button } from "../../../components/ui/button";
 import {
   CheckCircle2,
@@ -118,11 +119,22 @@ export function WholesalerProductViews() {
     loadProducts();
     checkUserApproval();
   }, [wholesalerId, userId, loadProducts, checkUserApproval]);
+  const addToCart = async (product: Product) => {
+    if (!userApproved) return;
 
-  function addToCart(product: Product) {
-    if (cart.find((p) => p.id === product.id)) return; // only once
-    setCart((prev) => [...prev, product]);
-  }
+    try {
+      await cartService.addToCart(userId!, product.id!, 1);
+
+      // update local cart state
+      setCart((prev) => {
+        if (prev.some((p) => p.id === product.id)) return prev;
+        return [...prev, product];
+      });
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   function removeFromCart(product: Product) {
     if (!product) return; // do nothing if id is undefined
     setCart((prev) => prev.filter((p) => p.id !== product.id));
@@ -178,53 +190,47 @@ export function WholesalerProductViews() {
               {(subscriptionStatus === "NONE" ||
                 subscriptionStatus === "REJECTED" ||
                 subscriptionStatus === "INACTIVE") && (
-                <button
-                  disabled
-                  className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 cursor-not-allowed opacity-80 w-full justify-center"
-                >
-                  <XCircle className="h-4 w-4" />
-                  Not Subscribed
-                </button>
-              )}
+                  <button
+                    disabled
+                    className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 cursor-not-allowed opacity-80 w-full justify-center"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Not Subscribed
+                  </button>
+                )}
 
               {/* Action Buttons */}
               {subscriptionStatus === "APPROVED" && (
-                <Button
+                <button
                   onClick={handleUnsubscribe}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition w-full"
+                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition w-full justify-center"
                 >
                   <XCircle className="h-4 w-4" />
                   Unsubscribe
-                </Button>
+                </button>
               )}
 
               {subscriptionStatus === "PENDING" && (
-                <Button
+                <button
                   onClick={handleCancel}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition w-full"
+                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition w-full justify-center"
                 >
                   <XCircle className="h-4 w-4" />
                   Cancel
-                </Button>
+                </button>
               )}
 
               {(subscriptionStatus === "NONE" ||
                 subscriptionStatus === "REJECTED" ||
                 subscriptionStatus === "INACTIVE") && (
-                <Button
-                  onClick={handleSubscribe}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition w-full"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Subscribe
-                </Button>
-              )}
+                  <button
+                    onClick={handleSubscribe}
+                    className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition w-full justify-center"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Subscribe Again
+                  </button>
+                )}
             </div>
           )}
         </aside>

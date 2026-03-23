@@ -178,25 +178,34 @@ export function WholesalerSubscriptionRequests() {
                     {formatDate(request.createdAt)}
                   </td>
                   <td className="px-4 py-3 flex justify-end gap-2">
-                    <Button
-                      onClick={() => handleApprove(request)}
-                      disabled={processing[request.id]}
-                      size="sm"
-                      className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      {processing[request.id] ? "Processing..." : "Accept"}
-                    </Button>
-                    <Button
-                      onClick={() => handleReject(request)}
-                      disabled={processing[request.id]}
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-1 border-red-200 text-red-600 hover:bg-red-50"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      {processing[request.id] ? "Processing..." : "Reject"}
-                    </Button>
+                    {/* Accept Button */}
+  <button
+    onClick={() => handleApprove(request)}
+    disabled={processing[request.id]}
+    className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm justify-center
+      ${processing[request.id]
+        ? "bg-green-50 text-green-400 cursor-not-allowed opacity-80 border border-green-200"
+        : "bg-green-50 text-green-600 border border-green-200 hover:bg-green-100"}
+      w-full sm:w-auto
+    `}
+  >
+    <CheckCircle2 className="h-4 w-4" />
+    {processing[request.id] ? "Processing..." : "Accept"}
+  </button>
+
+  {/* Reject Button */}
+  <button
+    onClick={() => handleReject(request)}
+    disabled={processing[request.id]}
+    className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm justify-center
+      ${processing[request.id] ? "bg-red-50 text-red-400 cursor-not-allowed opacity-80 border border-red-200"
+        : "text-red-600 border border-red-200 hover:bg-red-50"}
+      w-full sm:w-auto
+    `}
+  >
+    <XCircle className="h-4 w-4" />
+    {processing[request.id] ? "Processing..." : "Reject"}
+  </button>
                   </td>
                 </tr>
               ))}

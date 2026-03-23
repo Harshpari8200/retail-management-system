@@ -15,6 +15,7 @@ import { WholesalerProductViews } from "./pages/localSeller/wholesaler/Wholesale
 import { LocalSellerProductsPage } from "./pages/localSeller/LocalSellerProductsPage.tsx";
 import { OrdersPage } from "./pages/wholesaler/OrdersPage.tsx";
 import { OrderDetailPage } from "./pages/wholesaler/OrderDetailPage.tsx";
+import { CartPage } from "./pages/localSeller/CartPage.tsx";
 
 
 function ProtectedRoute() {
@@ -67,7 +68,9 @@ function App() {
         <Route path="dashboard" element={<LocalSellerDashboard />} />
         <Route path="wholesalers" element={<WholesalersPage />} />
         <Route path="wholesaler/:id" element={<WholesalerProductViews />} />
-        <Route path="products" element={<LocalSellerProductsPage />} />
+        <Route path="cart" element={<CartPage />}/>
+        <Route path="products" element={<LocalSellerProductsPage />}
+         />
       </Route>
 
       {/* Fallback */}

@@ -176,7 +176,7 @@ class ApiService {
     return error?.message || "API Error";
   }
 
-  private async request<T>(
+  public async request<T>(
     endpoint: string,
     config: AxiosRequestConfig = {},
   ): Promise<T> {

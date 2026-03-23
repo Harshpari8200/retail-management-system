@@ -60,7 +60,7 @@ const navigation: NavItem[] = [
     name: "Cart",
     href: "/local-seller/cart",
     icon: ShoppingCart,
-    available: false,
+    available: true,
   },
 
   {
