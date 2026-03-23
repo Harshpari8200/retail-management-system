@@ -45,6 +45,15 @@ public class LocalSellerController {
         return ResponseEntity.ok(products);
     }
 
+    /* get all products*/
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductDTO>> getAllProductsForSeller() {
+        log.info("API call: GET /products");
+
+        List<ProductDTO> products = localSellerService.getAllProductsForSeller();
+        return ResponseEntity.ok(products);
+    }
+
     /*  Get subscribed wholesalers with pagination */
     @GetMapping("/{localSellerId}/subscribed-wholesalers")
     public ResponseEntity<Page<WholesalerDTO>> getSubscribedWholesalers(

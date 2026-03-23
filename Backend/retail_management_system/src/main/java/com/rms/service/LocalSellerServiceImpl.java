@@ -187,6 +187,17 @@ public class LocalSellerServiceImpl implements LocalSellerService {
         log.info("Subscription marked inactive for localSeller {} and wholesaler {}", localSellerId, wholesalerId);
     }
 
+    @Override
+    public List<ProductDTO> getAllProductsForSeller() {
+        // Step 1: Fetch active products
+        List<Product> products = productRepository.findByIsActiveTrue();
+
+        // Step 2: Convert Product -> ProductDTO
+        return products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+    }
+
     public WholesalerDTO fromEntity(Wholesaler wholesaler) {
         return WholesalerDTO.builder()
                 .id(wholesaler.getId())

@@ -1,5 +1,5 @@
-import { useState, type ComponentType } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useState, type ComponentType } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   LogOut,
@@ -8,14 +8,15 @@ import {
   User,
   Users,
   X,
-} from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+  UserCheck,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 interface NavItem {
-  name: string
-  href: string
-  icon: ComponentType<{ className?: string }>
-  available: boolean
+  name: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  available: boolean;
 }
 
 const navigation: NavItem[] = [
@@ -33,23 +34,23 @@ function NavLinks({
   pathname,
   onNavigate,
 }: {
-  pathname: string
-  onNavigate?: () => void
+  pathname: string;
+  onNavigate?: () => void;
 }) {
   return (
     <nav className="space-y-2 px-4 py-6">
       {navigation.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== '/wholesaler' && pathname.startsWith(item.href))
+          (item.href !== "/wholesaler" && pathname.startsWith(item.href));
 
         const className = `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
           item.available
             ? isActive
-              ? 'bg-blue-50 text-blue-900'
-              : 'text-slate-700 hover:bg-slate-100'
-            : 'cursor-not-allowed text-slate-400'
-        }`
+              ? "bg-blue-50 text-blue-900"
+              : "text-slate-700 hover:bg-slate-100"
+            : "cursor-not-allowed text-slate-400"
+        }`;
 
         if (!item.available) {
           return (
@@ -60,7 +61,7 @@ function NavLinks({
                 Soon
               </span>
             </div>
-          )
+          );
         }
 
         return (
@@ -73,16 +74,16 @@ function NavLinks({
             <item.icon className="h-5 w-5" />
             {item.name}
           </Link>
-        )
+        );
       })}
     </nav>
-  )
+  );
 }
 
 export function WholesalerLayout() {
-  const location = useLocation()
-  const { user, logout } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -94,14 +95,19 @@ export function WholesalerLayout() {
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-slate-600 hover:bg-slate-100 lg:hidden"
               onClick={() => setSidebarOpen((open) => !open)}
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {sidebarOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </button>
             <div>
               <h1 className="text-lg font-bold text-blue-900 sm:text-xl">
                 Retail Management
               </h1>
               <p className="text-xs text-slate-500 sm:text-sm">
-                {user?.username ? `${user.username} · ` : ''}Wholesaler Dashboard
+                {user?.username ? `${user.username} · ` : ""}Wholesaler
+                Dashboard
               </p>
             </div>
           </div>
@@ -163,5 +169,5 @@ export function WholesalerLayout() {
         </main>
       </div>
     </div>
-  )
+  );
 }

@@ -117,15 +117,25 @@ function App() {
 
   return (
     <Routes>
-
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/register" element={<RegisterPage />} />
 
       {/* Protected Routes */}
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute />} />
 
+      {/* Wholesaler Panel */}
+      <Route path="/wholesaler" element={<WholesalerLayout />}>
+        <Route index element={<WholesalerDashboard />} />
+        <Route
+          path="subscription-requests"
+          element={<WholesalerSubscriptionRequests />}
+        />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="orders/:id" element={<OrderDetailPage />} />
+      </Route>
         {/* Wholesaler Panel */}
         <Route path="/wholesaler" element={<WholesalerLayout />}>
           <Route index element={<WholesalerDashboard />} />
@@ -152,32 +162,20 @@ function App() {
           <Route path="orders/:orderId/deliver" element={<DeliverOrderPage />} />
         </Route>
 
-<Route path="/local-seller" element={<LocalSellerLayout />}>
-<Route index element={<Navigate to="dashboard" replace />} />
-  <Route path="dashboard" element={<LocalSellerDashboard />} />
-  <Route path="wholesalers" element={<WholesalersPage />} />
-  <Route path="wholesaler/:id" element={<WholesalerProductViews />} />
-  <Route path="/local-seller/products" element={<ProductsPage />} />
-</Route>
-
-</Route>
+      <Route path="/local-seller" element={<LocalSellerLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<LocalSellerDashboard />} />
+        <Route path="wholesalers" element={<WholesalersPage />} />
+        <Route path="wholesaler/:id" element={<WholesalerProductViews />} />
+        <Route path="cart" element={<CartPage />}/>
+        <Route path="products" element={<LocalSellerProductsPage />}
+         />
+      </Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-
-      {/* Default redirect based on role */}
-      <Route path="*" element={
-        user ? (
-          user.role === 'WHOLESALER' ? <Navigate to="/wholesaler" replace /> :
-          user.role === 'SALESMAN' ? <Navigate to="/salesman" replace /> :
-          user.role === 'LOCAL_SELLER' ? <Navigate to="/local-seller" replace /> :
-          <Navigate to="/auth/login" replace />
-        ) : (
-          <Navigate to="/auth/login" replace />
-        )
-      } />
     </Routes>
-  )
+  );
 }
 
 export default App

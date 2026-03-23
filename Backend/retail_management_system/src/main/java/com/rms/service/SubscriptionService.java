@@ -14,6 +14,10 @@ public interface SubscriptionService {
 
     SubscriptionDTO rejectSubscription(Long wholesalerId, Long localSellerId);
 
+    SubscriptionDTO acceptSubscription(Long subscriptionId);
+
+    SubscriptionDTO rejectSubscriptionById(Long subscriptionId);
+
     Page<SubscriptionDTO> getActiveSubscriptions(Long wholesalerId,Pageable pageable);
 
     //Local seller side

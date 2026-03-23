@@ -25,4 +25,6 @@ public interface LocalSellerService {
     void subscribeWholesaler(Long localSellerId, Long wholesalerId);
 
     void unsubscribeWholesaler(Long localSellerId, Long wholesalerId);
+
+    List<ProductDTO> getAllProductsForSeller();
 }
