@@ -104,9 +104,17 @@ import { OrderDetailPage as SalesmanOrderDetailPage } from './pages/salesman/Ord
 import { AllOrdersPage } from './pages/salesman/AllOrdersPage.tsx'
 import { DeliverOrderPage } from './pages/salesman/DeliverOrderPage.tsx'
 import { WholesalerSubscriptionRequests } from './pages/wholesaler/WholesalerSubscriptionRequests.tsx'
-import { CartPage } from "./pages/localSeller/CartPage.tsx";
-
-
+import { CartPage } from './pages/localSeller/CartPage.tsx'
+import { LocalSellerProductsPage } from './pages/localSeller/LocalSellerProductsPage.tsx'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage.tsx'
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx'
+import { InvoicesPage } from './pages/localSeller/InvoicesPage.tsx'
+import { InvoiceDetailPage } from './pages/localSeller/InvoiceDetailPage.tsx'
+import { LsOrdersPage } from './pages/localSeller/LsOrdersPage.tsx'
+import { LsOrderDetailPage } from './pages/localSeller/LsOrderDetailPage.tsx'
+import { CheckoutPage } from './pages/localSeller/CheckoutPage.tsx'
+import { WholesalerInvoiceDetailPage } from './pages/wholesaler/InvoiceDetailPage.tsx'
+import { WholesalerInvoicesPage } from './pages/wholesaler/InvoicesPage.tsx'
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -121,54 +129,57 @@ function App() {
 
   return (
     <Routes>
-
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/register" element={<RegisterPage />} />
+      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
       {/* Wholesaler Panel */}
-      <Route element={<RoleBasedRoute allowedRoles={['WHOLESALER']} />} >
-        <Route path="/wholesaler" element={<WholesalerLayout />}>
-          <Route index element={<WholesalerDashboard />} />
-          <Route path="subscription-requests" element={<WholesalerSubscriptionRequests />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="orders/:id" element={<OrderDetailPage />} />
-          <Route path="salesmen" element={<SalesmenPage />} />
-          <Route path="salesmen/create" element={<CreateSalesmanPage />} />
-          <Route path="salesmen/:id" element={<SalesmanDetailsPage />} />
-          <Route path="salesmen/:id/edit" element={<EditSalesmanPage />} />
-          <Route path="salesmen/:id/assign" element={<AssignSellersPage />} />
-          <Route path="assignments" element={<AssignmentsPage />} />
-        </Route>
+      <Route path="/wholesaler" element={<WholesalerLayout />}>
+        <Route index element={<WholesalerDashboard />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="subscription-requests" element={<WholesalerSubscriptionRequests />} />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="orders/:id" element={<OrderDetailPage />} />
+        <Route path="salesmen" element={<SalesmenPage />} />
+        <Route path="salesmen/create" element={<CreateSalesmanPage />} />
+        <Route path="salesmen/:id" element={<SalesmanDetailsPage />} />
+        <Route path="salesmen/:id/edit" element={<EditSalesmanPage />} />
+        <Route path="salesmen/:id/assign" element={<AssignSellersPage />} />
+        <Route path="assignments" element={<AssignmentsPage />} />
+        <Route path="invoices" element={<WholesalerInvoicesPage />} />
+        <Route path="invoices/:orderId" element={<WholesalerInvoiceDetailPage />} />
       </Route>
 
       {/* Salesman Routes - Only SALESMAN can access */}
       <Route element={<RoleBasedRoute allowedRoles={['SALESMAN']} />}>
-         <Route path="/salesman" element={<SalesmanLayout />}>
-           <Route index element={<SalesmanDashboard />} />
-           <Route path="assigned-sellers" element={<AssignedSellersPage />} />
-           <Route path="sellers/:sellerId/orders" element={<SellerOrdersPage />} />
-           <Route path="orders" element={<AllOrdersPage />} />
-           <Route path="orders/:orderId" element={<SalesmanOrderDetailPage />} />
-           <Route path="orders/:orderId/deliver" element={<DeliverOrderPage />} />
-           
-           </Route>
+        <Route path="/salesman" element={<SalesmanLayout />}>
+          <Route index element={<SalesmanDashboard />} />
+          <Route path="assigned-sellers" element={<AssignedSellersPage />} />
+          <Route path="sellers/:sellerId/orders" element={<SellerOrdersPage />} />
+          <Route path="orders" element={<AllOrdersPage />} />
+          <Route path="orders/:orderId" element={<SalesmanOrderDetailPage />} />
+          <Route path="orders/:orderId/deliver" element={<DeliverOrderPage />} />
         </Route>
+      </Route>
 
-        <Route element={<RoleBasedRoute allowedRoles={['LOCAL_SELLER']} />}>
-          <Route path="/local-seller" element={<LocalSellerLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<LocalSellerDashboard />} />
-            <Route path="wholesalers" element={<WholesalersPage />} />
-            <Route path="wholesaler/:id" element={<WholesalerProductViews />} />
-            <Route path="/local-seller/products" element={<ProductsPage />} />
-            <Route path="cart" element={<CartPage />}/>
-          </Route>
-        </Route>
+      <Route path="/local-seller" element={<LocalSellerLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<LocalSellerDashboard />} />
+        <Route path="wholesalers" element={<WholesalersPage />} />
+        <Route path="wholesaler/:id" element={<WholesalerProductViews />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="orders" element={<LsOrdersPage />} />
+        <Route path="orders/:orderId" element={<LsOrderDetailPage />} />
+        <Route path="invoices" element={<InvoicesPage />} />
+        <Route path="invoices/:orderId" element={<InvoiceDetailPage />} />
+        <Route path="products" element={<LocalSellerProductsPage />} />
+      </Route>
 
-      {/* Default redirect based on role */}
+      {/* Fallback */}
       <Route path="*" element={
         user ? (
           user.role === 'WHOLESALER' ? <Navigate to="/wholesaler" replace /> :
@@ -176,11 +187,11 @@ function App() {
               user.role === 'LOCAL_SELLER' ? <Navigate to="/local-seller" replace /> :
                 <Navigate to="/auth/login" replace />
         ) : (
-          <Navigate to="/auth/login" replace />
+          <Navigate to="auth/login" replace />
         )
       } />
     </Routes>
-  )
+  );
 }
 
 export default App
