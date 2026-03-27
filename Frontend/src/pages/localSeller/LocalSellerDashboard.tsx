@@ -101,34 +101,45 @@ export function LocalSellerDashboard() {
       ).length;
 
       const statusMap: Record<number, string> = {};
+
       subscribedWholesalers.forEach((w: any) => {
-        statusMap[w.wholesalerId] = w.status;
-      });
+        const id = w.wholesalerId || w.id || w.wholesaler?.id;
 
-      if (Object.keys(lastSubscriptionStatus).length > 0) {
-        const updates: string[] = [];
+        if (!id) return;
 
-        subscribedWholesalers.forEach((w: any) => {
-          const previous = lastSubscriptionStatus[w.wholesalerId];
-          const current = w.status;
+        statusMap[id] = w.status;
 
-          if (previous === "PENDING" && current === "APPROVED") {
-            updates.push(
-              `Subscription approved for wholesaler ${w.wholesalerName || w.wholesalerId}`,
-            );
-          }
+        const previous = lastSubscriptionStatus[id];
+        const current = w.status;
 
-          if (previous === "PENDING" && current === "REJECTED") {
-            updates.push(
-              `Subscription rejected for wholesaler ${w.wholesalerName || w.wholesalerId}`,
-            );
-          }
-        });
+        if (previous === "PENDING" && current === "APPROVED") {
+          const name =
+            w.wholesalerName ||
+            w.businessName ||
+            w.name ||
+            w.wholesaler?.businessName ||
+            `ID: ${id}`;
 
-        if (updates.length > 0) {
-          setNotifications((prev) => [...updates, ...prev]);
+          setNotifications((prev) => [
+            `Subscription approved for wholesaler ${name}`,
+            ...prev,
+          ]);
         }
-      }
+
+        if (previous === "PENDING" && current === "REJECTED") {
+          const name =
+            w.wholesalerName ||
+            w.businessName ||
+            w.name ||
+            w.wholesaler?.businessName ||
+            `ID: ${id}`;
+
+          setNotifications((prev) => [
+            `Subscription rejected for wholesaler ${name}`,
+            ...prev,
+          ]);
+        }
+      });
 
       setLastSubscriptionStatus(statusMap);
 
@@ -216,17 +227,125 @@ export function LocalSellerDashboard() {
     );
   }
 
-  return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-      <p>Welcome back, {user?.username || "Local Seller"}!</p>
+  // return (
+  //   <div className="p-6 space-y-6">
+  //     <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+  //     <p>Welcome back, {user?.username || "Local Seller"}!</p>
 
+  //     {notifications.length > 0 && (
+  //       <div className="space-y-2">
+  //         {notifications.map((note, index) => (
+  //           <div
+  //             key={index}
+  //             className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+  //           >
+  //             {note}
+  //           </div>
+  //         ))}
+  //       </div>
+  //     )}
+
+  //     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  //       {statCards.map((card) => (
+  //         <div
+  //           key={card.label}
+  //           className="rounded-lg border bg-white p-6 shadow-sm"
+  //         >
+  //           <div className="flex items-center justify-between">
+  //             <div>
+  //               <p className="text-sm text-slate-500">{card.label}</p>
+  //               <p className="mt-2 text-2xl font-bold text-slate-900">
+  //                 {card.value}
+  //               </p>
+  //               <p className="mt-1 text-xs text-slate-400">{card.helper}</p>
+  //             </div>
+  //             <div className={`rounded-lg p-3 ${card.color}`}>
+  //               <card.icon className="h-6 w-6" />
+  //             </div>
+  //           </div>
+  //         </div>
+  //       ))}
+  //     </div>
+
+  //     <div className="grid gap-4 md:grid-cols-2">
+  //       <button
+  //         onClick={() => navigate("/local-seller/wholesalers")}
+  //         className="group rounded-lg border bg-white p-6 text-left shadow-sm hover:border-blue-300 hover:shadow-md"
+  //       >
+  //         <Store className="h-8 w-8 text-blue-600" />
+  //         <h3 className="mt-4 text-lg font-semibold text-slate-900">
+  //           Browse Wholesalers
+  //         </h3>
+  //         <p className="mt-1 text-sm text-slate-500">
+  //           Discover and subscribe to wholesalers
+  //         </p>
+  //         <ArrowRight className="mt-4 h-5 w-5 text-slate-400 group-hover:text-blue-600" />
+  //       </button>
+
+  //       <button
+  //         onClick={() => navigate("/local-seller/subscriptions")}
+  //         className="group rounded-lg border bg-white p-6 text-left shadow-sm hover:border-blue-300 hover:shadow-md"
+  //       >
+  //         <Package className="h-8 w-8 text-blue-600" />
+  //         <h3 className="mt-4 text-lg font-semibold text-slate-900">
+  //           My Subscriptions
+  //         </h3>
+  //         <p className="mt-1 text-sm text-slate-500">
+  //           View your subscribed wholesalers
+  //         </p>
+  //         <ArrowRight className="mt-4 h-5 w-5 text-slate-400 group-hover:text-blue-600" />
+  //       </button>
+  //     </div>
+
+  //     <div className="rounded-lg border bg-white p-6 shadow-sm">
+  //       <h2 className="text-lg font-semibold text-slate-900">
+  //         Recent Wholesalers
+  //       </h2>
+  //       <div className="mt-4 space-y-3">
+  //         {wholesalers.slice(0, 3).map((w) => (
+  //           <div
+  //             key={w.id}
+  //             className="flex items-center justify-between rounded-lg border p-3 hover:bg-slate-50"
+  //           >
+  //             <div>
+  //               <p className="font-medium text-slate-900">
+  //                 {w.businessName || w.name}
+  //               </p>
+  //               <p className="text-xs text-slate-500">{w.email}</p>
+  //             </div>
+  //             <Link
+  //               to={`/local-seller/wholesalers`}
+  //               className="text-blue-600 text-sm font-medium hover:underline"
+  //             >
+  //               View wholesaler
+  //             </Link>
+  //           </div>
+  //         ))}
+  //         {wholesalers.length === 0 && (
+  //           <p className="text-sm text-slate-500">No wholesalers available</p>
+  //         )}
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <header>
+        <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Welcome back{user?.username ? `, ${user.username}` : ""}.
+        </p>
+      </header>
+
+      {/* Notifications */}
       {notifications.length > 0 && (
         <div className="space-y-2">
           {notifications.map((note, index) => (
             <div
               key={index}
-              className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+              className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
             >
               {note}
             </div>
@@ -234,32 +353,34 @@ export function LocalSellerDashboard() {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats */}
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
-          <div
+          <article
             key={card.label}
-            className="rounded-lg border bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between">
               <div>
-                <p className="text-sm text-slate-500">{card.label}</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">
+                <p className="text-xs uppercase text-slate-500">{card.label}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
                   {card.value}
                 </p>
-                <p className="mt-1 text-xs text-slate-400">{card.helper}</p>
+                <p className="text-xs text-slate-500 mt-1">{card.helper}</p>
               </div>
-              <div className={`rounded-lg p-3 ${card.color}`}>
-                <card.icon className="h-6 w-6" />
+              <div className={`rounded-xl p-2 ${card.color}`}>
+                <card.icon className="h-5 w-5" />
               </div>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Quick Actions */}
+      <section className="grid gap-4 md:grid-cols-2">
         <button
           onClick={() => navigate("/local-seller/wholesalers")}
-          className="group rounded-lg border bg-white p-6 text-left shadow-sm hover:border-blue-300 hover:shadow-md"
+          className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:shadow-md hover:border-blue-300"
         >
           <Store className="h-8 w-8 text-blue-600" />
           <h3 className="mt-4 text-lg font-semibold text-slate-900">
@@ -273,7 +394,7 @@ export function LocalSellerDashboard() {
 
         <button
           onClick={() => navigate("/local-seller/subscriptions")}
-          className="group rounded-lg border bg-white p-6 text-left shadow-sm hover:border-blue-300 hover:shadow-md"
+          className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:shadow-md hover:border-blue-300"
         >
           <Package className="h-8 w-8 text-blue-600" />
           <h3 className="mt-4 text-lg font-semibold text-slate-900">
@@ -284,17 +405,19 @@ export function LocalSellerDashboard() {
           </p>
           <ArrowRight className="mt-4 h-5 w-5 text-slate-400 group-hover:text-blue-600" />
         </button>
-      </div>
+      </section>
 
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">
+      {/* Recent */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900">
           Recent Wholesalers
         </h2>
+
         <div className="mt-4 space-y-3">
           {wholesalers.slice(0, 3).map((w) => (
             <div
               key={w.id}
-              className="flex items-center justify-between rounded-lg border p-3 hover:bg-slate-50"
+              className="flex justify-between items-center rounded-lg border border-slate-100 px-3 py-2 hover:bg-slate-50"
             >
               <div>
                 <p className="font-medium text-slate-900">
@@ -302,19 +425,23 @@ export function LocalSellerDashboard() {
                 </p>
                 <p className="text-xs text-slate-500">{w.email}</p>
               </div>
+
               <Link
-                to={`/local-seller/wholesalers`}
-                className="text-blue-600 text-sm font-medium hover:underline"
+                to="/local-seller/wholesalers"
+                className="text-sm font-medium text-blue-600 hover:underline"
               >
-                View wholesaler
+                View
               </Link>
             </div>
           ))}
+
           {wholesalers.length === 0 && (
-            <p className="text-sm text-slate-500">No wholesalers available</p>
+            <p className="text-sm text-slate-500">
+              No wholesalers available
+            </p>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -81,10 +81,12 @@ function NavLinks({
   );
 }
 
+
 export function WholesalerLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+ 
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -114,12 +116,13 @@ export function WholesalerLayout() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
-              aria-label="Profile"
-            >
-              <User className="h-5 w-5" />
-            </button>
+      type="button"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
+      aria-label="Profile"
+    
+    >
+      <User className="h-5 w-5" />
+    </button>
             <button
               type="button"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 hover:bg-red-50"

@@ -116,6 +116,7 @@ import { CheckoutPage } from './pages/localSeller/CheckoutPage.tsx'
 import { WholesalerInvoiceDetailPage } from './pages/wholesaler/InvoiceDetailPage.tsx'
 import { WholesalerInvoicesPage } from './pages/wholesaler/InvoicesPage.tsx'
 
+
 function App() {
   const { user, isLoading } = useAuth();
 
@@ -129,6 +130,7 @@ function App() {
 
   return (
     <Routes>
+
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
@@ -151,6 +153,7 @@ function App() {
         <Route path="assignments" element={<AssignmentsPage />} />
         <Route path="invoices" element={<WholesalerInvoicesPage />} />
         <Route path="invoices/:orderId" element={<WholesalerInvoiceDetailPage />} />
+  
       </Route>
 
       {/* Salesman Routes - Only SALESMAN can access */}
@@ -162,8 +165,10 @@ function App() {
           <Route path="orders" element={<AllOrdersPage />} />
           <Route path="orders/:orderId" element={<SalesmanOrderDetailPage />} />
           <Route path="orders/:orderId/deliver" element={<DeliverOrderPage />} />
+
         </Route>
       </Route>
+
 
       <Route path="/local-seller" element={<LocalSellerLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
@@ -191,7 +196,7 @@ function App() {
         )
       } />
     </Routes>
-  );
+  )
 }
 
 export default App
