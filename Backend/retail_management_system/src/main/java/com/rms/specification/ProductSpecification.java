@@ -111,4 +111,17 @@ public class ProductSpecification {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public static Specification<Product> byWholesalerIds(List<Long> wholesalerIds) {
+        return (root, query, cb) -> {
+            if (wholesalerIds == null || wholesalerIds.isEmpty()) {
+                return cb.disjunction();
+            }
+            return root.get("wholesaler").get("id").in(wholesalerIds);
+        };
+    }
+
+    public static Specification<Product> byActiveOnly() {
+        return (root, query, cb) -> cb.isTrue(root.get("isActive"));
+    }
 }

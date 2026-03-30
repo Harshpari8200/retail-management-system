@@ -168,7 +168,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom'
 
 interface AuthContextType {
-  user: { id: number; username: string; role: string } | null
+  user: { id: number; username: string; role: string; city?: string } | null
   token: string | null
   isLoading: boolean
   login: (credentials: LoginRequest) => Promise<void>
@@ -180,7 +180,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ id: number; username: string; role: string } | null>(null)
+  const [user, setUser] = useState<{ id: number; username: string; role: string; city?: string } | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
@@ -193,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedProfileId =
         localStorage.getItem('profile_id') ?? localStorage.getItem('user_id')
       const storedUsername = localStorage.getItem('username')
+      const storedCity = localStorage.getItem('user_city')
 
       if (storedToken && storedRole && storedProfileId && storedUsername) {
         setToken(storedToken)
@@ -200,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: storedRole,
           id: parseInt(storedProfileId, 10),
           username: storedUsername,
+          city: storedCity || undefined,
         })
       }
       setIsLoading(false)
@@ -223,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response: LoginResponse = await api.login(credentials)
       const profileId = response.roleId ?? response.userId
+      const sellerCity = response.city
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('jwt_token', response.token)
@@ -230,6 +233,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user_id', response.userId.toString())
         localStorage.setItem('profile_id', profileId.toString())
         localStorage.setItem('username', response.username)
+        if (sellerCity) {
+        localStorage.setItem('user_city', sellerCity);
+      }
       }
 
       setToken(response.token)
@@ -237,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: response.role,
         id: profileId,
         username: response.username,
+        city: sellerCity,
       })
 
       const state = location.state as { from?: Location } | null
@@ -272,6 +279,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('user_id')
       localStorage.removeItem('profile_id')
       localStorage.removeItem('username')
+      localStorage.removeItem('user_city')
     }
     setToken(null)
     setUser(null)

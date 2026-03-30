@@ -39,6 +39,7 @@ export function WholesalerProductViews() {
   const wholesalerId = Number(id);
   const { user } = useAuth(); // user object from AuthContext
   const userId = user?.id;
+  const sellerCity = user?.city;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ export function WholesalerProductViews() {
 
   const checkUserApproval = useCallback(async () => {
     try {
-      if (!userId) {
+      if (!userId || !wholesalerId) {
         setUserApproved(false);
         return;
       }
@@ -104,7 +105,7 @@ export function WholesalerProductViews() {
       setLoading(true);
       setError(null);
 
-      const page = await api.getWholesalerProducts(wholesalerId);
+      const page = await api.getWholesalerProducts(wholesalerId, sellerCity);
       setProducts(page ?? []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load products");

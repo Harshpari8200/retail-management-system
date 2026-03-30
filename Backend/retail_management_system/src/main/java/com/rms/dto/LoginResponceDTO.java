@@ -19,4 +19,5 @@ public class LoginResponceDTO {
     private String username;
     private String businessName;    // For wholesaler
     private String shopName;        // For seller
+    private String city;
 }

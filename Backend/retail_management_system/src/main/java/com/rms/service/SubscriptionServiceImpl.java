@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -163,13 +165,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public SubscriptionDTO getSubscriptionStatus(Long localSellerId, Long wholesalerId) {
         log.info("Checking subscription status for seller: {}, wholesaler: {}", localSellerId, wholesalerId);
 
+        if (localSellerId == null || wholesalerId == null) {
+            log.warn("Invalid IDs: seller={}, wholesaler={}", localSellerId, wholesalerId);
+            return SubscriptionDTO.builder()
+                    .localSellerId(localSellerId)
+                    .wholesalerId(wholesalerId)
+                    .status(null)
+                    .message("Invalid IDs provided")
+                    .build();
+        }
+
         Specification<WholesalerSellerMapping> spec =
                 Specification.where(WholesalerSellerSpecification.byLocalSellerId(localSellerId))
                         .and(WholesalerSellerSpecification.byWholesalerId(wholesalerId));
 
-        WholesalerSellerMapping mapping = mappingRepository.findOne(spec).orElse(null);
+        Optional<WholesalerSellerMapping> mappingOpt = mappingRepository.findOne(spec);
 
-        if (mapping == null) {
+        if (mappingOpt.isEmpty()) {
+            log.info("No subscription found for seller: {}, wholesaler: {}", localSellerId, wholesalerId);
             return SubscriptionDTO.builder()
                     .localSellerId(localSellerId)
                     .wholesalerId(wholesalerId)
@@ -178,7 +191,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     .build();
         }
 
-        String message = getStatusMessage(mapping.getStatus());
+        WholesalerSellerMapping mapping = mappingOpt.get();
+        SubscriptionStatus status = mapping.getStatus();
+
+        log.info("Found subscription with status: {}", status);
+
+        String message = getStatusMessage(status);
         return convertToDTO(mapping, message);
     }
 
@@ -241,6 +259,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         dto.setLocalSellerShop(mapping.getLocalSeller().getShopName());
         dto.setWholesalerId(mapping.getWholesaler().getId());
         dto.setWholesalerName(mapping.getWholesaler().getBusinessName());
+        dto.setStatus(mapping.getStatus());
         dto.setMessage(message);
         return dto;
     }
