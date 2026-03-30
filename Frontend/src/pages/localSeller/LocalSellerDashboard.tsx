@@ -219,7 +219,10 @@ export function LocalSellerDashboard() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-      <p>Welcome back, {user?.username || "Local Seller"}!</p>
+      <p>
+        Welcome back, {user?.username || "Local Seller"}!
+        {user?.city && <span className="text-slate-500 ml-2">{user.city}</span>}
+      </p>
 
       {notifications.length > 0 && (
         <div className="space-y-2">

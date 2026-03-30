@@ -26,5 +26,9 @@ public interface LocalSellerService {
 
     void unsubscribeWholesaler(Long localSellerId, Long wholesalerId);
 
-    List<ProductDTO> getAllProductsForSeller();
+    List<ProductDTO> getAllProductsForSeller(String city);
+
+    List<WholesalerDTO> getWholesalersByCity(String city);
+
+    List<ProductDTO> getProductsByWholesalerIfServesCity(Long wholesalerId, String city);
 }

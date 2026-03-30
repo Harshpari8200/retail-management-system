@@ -19,8 +19,8 @@ public class RegisterRequestDTO {
 
     //for localseller
     private String shopName;
-    private Double latitude;
-    private Double longitude;
+    private String city;
+    private String state;
 
     // For salesman
     private String region;

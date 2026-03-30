@@ -15,6 +15,8 @@ public interface LocalSellerRepository extends
 
     Optional<LocalSeller> findByUserId(Long userId);
 
+    Optional<LocalSeller> findById(Long roleId);
+
     @Query("SELECT s FROM LocalSeller s")
     List<LocalSeller> getAllSellers();
 }

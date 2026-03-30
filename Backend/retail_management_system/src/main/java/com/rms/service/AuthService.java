@@ -64,6 +64,8 @@ public class AuthService {
             seller.setUser(savedUser);
             seller.setShopName(request.getShopName());
             seller.setAddress(request.getAddress());
+            seller.setCity(request.getCity());
+            seller.setState(request.getState());
             localSellerRepository.save(seller);
 
         } else if (request.getRole() == Role.SALESMAN) {
@@ -102,6 +104,7 @@ public class AuthService {
         Long roleId = null;
         String businessName = null;
         String shopName = null;
+        String city = null;
 
         if (user.getRole() == Role.WHOLESALER) {
             Wholesaler wholesaler = wholesalerRepository.findByUserId(user.getId())
@@ -116,6 +119,7 @@ public class AuthService {
             if (seller != null) {
                 roleId = seller.getId();
                 shopName = seller.getShopName();
+                city = seller.getCity();
             }
         }else if (user.getRole() == Role.SALESMAN) {
             Salesman salesman = salesmanRepository.findByUserId(user.getId())
@@ -136,6 +140,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .businessName(businessName)
                 .shopName(shopName)
+                .city(city)
                 .build();
     }
 }

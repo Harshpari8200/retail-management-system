@@ -18,5 +18,9 @@ public class LocalSeller {
 
     private String shopName;
 
+    private String city;
+
+    private String state;
+
     private String address;
 }

@@ -9,6 +9,7 @@ import {
   Users,
   X,
   UserCheck,
+  MapPin,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -22,6 +23,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/wholesaler', icon: LayoutDashboard, available: true },
   { name: 'Products', href: '/wholesaler/products', icon: Package, available: true },
+  { name: 'Service Areas', href: '/wholesaler/service-areas', icon: MapPin, available: true },
   { name: 'Subscription Requests', href: '/wholesaler/subscription-requests', icon: UserCheck, available: true },
   { name: 'Orders', href: '/wholesaler/orders', icon: Package, available: true },
   { name: 'Salesmen', href: '/wholesaler/salesmen', icon: Users, available: true },

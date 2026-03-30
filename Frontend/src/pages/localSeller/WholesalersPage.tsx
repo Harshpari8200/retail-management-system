@@ -21,6 +21,7 @@ export function WholesalersPage() {
 
   const { user } = useAuth();
   const sellerId = user?.id;
+  const sellerCity = user?.city;
 
   useEffect(() => {
     loadWholesalers();
@@ -34,7 +35,7 @@ export function WholesalersPage() {
 
   async function loadWholesalers() {
     try {
-      const data = await api.getWholesalers();
+      const data = await api.getWholesalers(sellerCity);
       setWholesalers(data);
     } catch (err: any) {
       console.error(err.message);
@@ -49,8 +50,13 @@ export function WholesalersPage() {
       const statusMap: Record<number, SubscriptionStatus> = {};
       await Promise.all(
         wholesalers.map(async (w) => {
-          const res = await api.getSubscriptionStatus(sellerId, w.id);
-          statusMap[w.id] = res.status || "NONE";
+          if (!w.id) return;
+          try {
+            const res = await api.getSubscriptionStatus(sellerId, w.id);
+            statusMap[w.id] = res.status || "NONE";
+          } catch {
+            statusMap[w.id] = "NONE";
+          }
         })
       );
       setStatuses(statusMap);
@@ -65,7 +71,7 @@ export function WholesalersPage() {
     setStatuses((prev) => ({ ...prev, [id]: "PENDING" }));
     try {
       await api.subscribeWholesaler(sellerId, id);
-      
+
     } catch (err: any) {
       console.error(err.message);
       setStatuses((prev) => ({ ...prev, [id]: prevStatus }));
@@ -136,78 +142,78 @@ export function WholesalersPage() {
                   <td className="px-4 py-3 font-medium text-slate-900">{w.username}</td>
                   <td className="px-4 py-3 text-slate-600">{w.businessName}</td>
                   <td className="px-4 py-3 flex justify-end items-center gap-2">
-  {/* View Products always visible */}
-  <Link
-    to={`/local-seller/wholesaler/${w.id}`}
-    className="text-blue-600 text-sm font-medium hover:underline"
-  >
-    View Products
-  </Link>
+                    {/* View Products always visible */}
+                    <Link
+                      to={`/local-seller/wholesaler/${w.id}`}
+                      className="text-blue-600 text-sm font-medium hover:underline"
+                    >
+                      View Products
+                    </Link>
 
-  {/* NOT SUBSCRIBED */}
-  {(!statuses[w.id] || statuses[w.id] === "NONE") && (
-    <button
-      onClick={() => handleSubscribe(w.id)}
-      className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition"
-    >
-      <UserPlus className="h-4 w-4" />
-      Subscribe
-    </button>
-  )}
+                    {/* NOT SUBSCRIBED */}
+                    {(!statuses[w.id] || statuses[w.id] === "NONE") && (
+                      <button
+                        onClick={() => handleSubscribe(w.id)}
+                        className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Subscribe
+                      </button>
+                    )}
 
-  {/* PENDING */}
-  {statuses[w.id] === "PENDING" && (
-    <>
-      <button
-        disabled
-        className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50/20 px-3 py-1.5 text-sm text-amber-600 cursor-not-allowed opacity-80"
-      >
-        <Clock className="h-4 w-4" />
-        Pending
-      </button>
+                    {/* PENDING */}
+                    {statuses[w.id] === "PENDING" && (
+                      <>
+                        <button
+                          disabled
+                          className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50/20 px-3 py-1.5 text-sm text-amber-600 cursor-not-allowed opacity-80"
+                        >
+                          <Clock className="h-4 w-4" />
+                          Pending
+                        </button>
 
-      <button
-        onClick={() => handleCancel(w.id)}
-        className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition"
-      >
-        <XCircle className="h-4 w-4" />
-        Cancel
-      </button>
-    </>
-  )}
+                        <button
+                          onClick={() => handleCancel(w.id)}
+                          className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Cancel
+                        </button>
+                      </>
+                    )}
 
-  {/* APPROVED */}
-  {statuses[w.id] === "APPROVED" &&  (
-    <>
-      <button
-        disabled
-        className="flex items-center gap-1 rounded-lg border border-green-200 bg-green-50/20 px-3 py-1.5 text-sm text-green-600 cursor-not-allowed opacity-80"
-      >
-        <CheckCircle2 className="h-4 w-4" />
-        Subscribed
-      </button>
+                    {/* APPROVED */}
+                    {statuses[w.id] === "APPROVED" && (
+                      <>
+                        <button
+                          disabled
+                          className="flex items-center gap-1 rounded-lg border border-green-200 bg-green-50/20 px-3 py-1.5 text-sm text-green-600 cursor-not-allowed opacity-80"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Subscribed
+                        </button>
 
-      <button
-        onClick={() => handleUnsubscribe(w.id)}
-        className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition"
-      >
-        <XCircle className="h-4 w-4" />
-        Unsubscribe
-      </button>
-    </>
-  )}
+                        <button
+                          onClick={() => handleUnsubscribe(w.id)}
+                          className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50/20 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50/30 transition"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Unsubscribe
+                        </button>
+                      </>
+                    )}
 
-  {/* REJECTED / INACTIVE */}
-  {(statuses[w.id] === "REJECTED" || statuses[w.id] === "INACTIVE") && (
-    <button
-      onClick={() => handleSubscribe(w.id)}
-      className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition"
-    >
-      <Repeat className="h-4 w-4" />
-      Subscribe Again
-    </button>
-  )}
-</td>
+                    {/* REJECTED / INACTIVE */}
+                    {(statuses[w.id] === "REJECTED" || statuses[w.id] === "INACTIVE") && (
+                      <button
+                        onClick={() => handleSubscribe(w.id)}
+                        className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/30 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50/50 transition"
+                      >
+                        <Repeat className="h-4 w-4" />
+                        Subscribe Again
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))
             )}

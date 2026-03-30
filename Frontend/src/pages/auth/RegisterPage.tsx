@@ -1,9 +1,9 @@
-import { useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Store, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react'
+import { Store, CheckCircle2, ArrowRight, Loader2, MapPin, ChevronDown } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -15,8 +15,16 @@ import {
   FormLabel,
   FormMessage,
 } from '../../components/ui/form'
+import { api } from '../../services/api'
 
 const phoneRegex = /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/u
+
+interface StateData {
+  id: number;
+  name: string;
+  code: string;
+  cities: string[];
+}
 
 const registerSchema = z.object({
   username: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,10 +32,53 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z.string().regex(phoneRegex, 'Invalid phone number'),
   role: z.enum(['WHOLESALER', 'LOCAL_SELLER']),
+  address: z.string().optional(),
+  
+  // Wholesaler fields
   businessName: z.string().optional(),
   gstNumber: z.string().optional(),
+  
+  // Local Seller fields
   shopName: z.string().optional(),
-  address: z.string().optional(),
+  stateId: z.number().optional(),
+  city: z.string().optional(),
+  stateName: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.role === 'WHOLESALER') {
+    if (!data.businessName || data.businessName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['businessName'],
+        message: 'Business name is required',
+      })
+    }
+  }
+  
+  if (data.role === 'LOCAL_SELLER') {
+    if (!data.shopName || data.shopName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['shopName'],
+        message: 'Shop name is required',
+      })
+    }
+    
+    if (!data.city || data.city.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['city'],
+        message: 'Please select a city',
+      })
+    }
+    
+    if (!data.stateId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['stateId'],
+        message: 'Please select a state',
+      })
+    }
+  }
 })
 
 type RegisterFormValues = z.infer<typeof registerSchema>
@@ -36,6 +87,12 @@ export function RegisterPage() {
   const { register } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [states, setStates] = useState<StateData[]>([])
+  const [cities, setCities] = useState<string[]>([])
+  const [loadingData, setLoadingData] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredCities, setFilteredCities] = useState<string[]>([])
+  const [showCityDropdown, setShowCityDropdown] = useState(false)
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -49,13 +106,83 @@ export function RegisterPage() {
       gstNumber: '',
       shopName: '',
       address: '',
+      stateId: undefined,
+      city: '',
+      stateName: '',
     },
   })
 
   const currentRole = form.watch('role')
+  const selectedStateId = form.watch('stateId')
+  const isLocalSeller = currentRole === 'LOCAL_SELLER'
+
+  useEffect(() => {
+    loadLocalData()
+  }, [])
+
+  const loadLocalData = async () => {
+    setLoadingData(true)
+    try {
+      const response = await fetch('/india_data.json')
+      const data = await response.json()
+      setStates(data.states)
+    } catch (err) {
+      console.error('Failed to load location data:', err)
+      setError('Failed to load states and cities. Please refresh the page.')
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  // Load cities when state changes
+  useEffect(() => {
+    if (selectedStateId) {
+      const selectedState = states.find(s => s.id === selectedStateId)
+      if (selectedState) {
+        setCities(selectedState.cities)
+        setFilteredCities(selectedState.cities)
+        form.setValue('stateName', selectedState.name)
+      }
+    } else {
+      setCities([])
+      setFilteredCities([])
+      form.setValue('city', '')
+      setSearchQuery('')
+    }
+  }, [selectedStateId, states, form])
+
+  // Filter cities based on search query
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = cities.filter(city => 
+        city.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredCities(filtered)
+      setShowCityDropdown(true)
+    } else {
+      setFilteredCities(cities)
+      setShowCityDropdown(false)
+    }
+  }, [searchQuery, cities])
+
+  const handleSelectCity = (city: string) => {
+    form.setValue('city', city)
+    setSearchQuery(city)
+    setShowCityDropdown(false)
+  }
 
   const handleRoleChange = (nextRole: 'WHOLESALER' | 'LOCAL_SELLER') => {
     form.setValue('role', nextRole, { shouldValidate: true })
+    if (nextRole === 'WHOLESALER') {
+      form.setValue('shopName', '')
+      form.setValue('city', '')
+      form.setValue('stateName', '')
+      form.clearErrors(['shopName', 'city'])
+    } else {
+      form.setValue('businessName', '')
+      form.setValue('gstNumber', '')
+      form.clearErrors(['businessName', 'gstNumber'])
+    }
   }
 
   const onSubmit = (values: RegisterFormValues) => {
@@ -63,26 +190,25 @@ export function RegisterPage() {
 
     startTransition(async () => {
       try {
-        await register({
+        const payload: any = {
           username: values.username,
           email: values.email,
           password: values.password,
           phone: values.phone,
           role: values.role,
-          businessName:
-            values.role === 'WHOLESALER'
-              ? values.businessName || undefined
-              : undefined,
-          gstNumber:
-            values.role === 'WHOLESALER'
-              ? values.gstNumber || undefined
-              : undefined,
-          shopName:
-            values.role === 'LOCAL_SELLER'
-              ? values.shopName || undefined
-              : undefined,
-          address: values.address || undefined,
-        })
+          address: values.address,
+        }
+
+        if (values.role === 'WHOLESALER') {
+          payload.businessName = values.businessName
+          payload.gstNumber = values.gstNumber
+        } else {
+          payload.shopName = values.shopName
+          payload.city = values.city
+          payload.state = values.stateName
+        }
+
+        await register(payload)
       } catch (err: any) {
         setError(err?.message ?? 'Registration failed, please try again.')
       }
@@ -90,6 +216,14 @@ export function RegisterPage() {
   }
 
   const isDisabled = isPending || !form.formState.isValid
+
+  if (loadingData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-2">
@@ -301,6 +435,7 @@ export function RegisterPage() {
                 )}
 
                 {currentRole === 'LOCAL_SELLER' && (
+                  <>
                   <FormField
                     control={form.control}
                     name="shopName"
@@ -318,6 +453,84 @@ export function RegisterPage() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="stateId"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormLabel>State *</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <select
+                                  value={field.value || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value ? Number(e.target.value) : undefined;
+                                    field.onChange(value);
+                                    if (!value) {
+                                      form.setValue('city', '');
+                                      setSearchQuery('');
+                                    }
+                                  }}
+                                  className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
+                                >
+                                  <option value="">-- Select State --</option>
+                                  {states.map((state) => (
+                                    <option key={state.id} value={state.id}>
+                                      {state.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                              </div>
+                            </FormControl>
+                            <FormMessage>{fieldState.error?.message}</FormMessage>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* City Selection with Search */}
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormLabel>City *</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <input
+                                  type="text"
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
+                                  onFocus={() => selectedStateId && setShowCityDropdown(true)}
+                                  placeholder={selectedStateId ? "Search or select city..." : "Select state first"}
+                                  disabled={!selectedStateId}
+                                  className="w-full rounded-md border border-slate-300 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500"
+                                />
+                                {showCityDropdown && selectedStateId && filteredCities.length > 0 && (
+                                  <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                                    {filteredCities.map((city) => (
+                                      <button
+                                        key={city}
+                                        type="button"
+                                        onClick={() => handleSelectCity(city)}
+                                        className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
+                                      >
+                                        {city}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage>{fieldState.error?.message}</FormMessage>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </>
                 )}
 
                 <FormField
@@ -328,7 +541,7 @@ export function RegisterPage() {
                       <FormLabel>Address</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="City, State"
+                          placeholder="street, area, landmark..."
                           {...field}
                           className="h-11 border-slate-200 bg-slate-50 transition-all focus:bg-white"
                         />

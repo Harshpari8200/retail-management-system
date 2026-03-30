@@ -1,0 +1,88 @@
+{
+  "states": [
+    {
+      "id": 1,
+      "name": "Maharashtra",
+      "code": "MH",
+      "cities": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Solapur", "Kolhapur", "Amravati", "Nanded", "Sangli", "Jalgaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Beed", "Osmanabad", "Wardha"]
+    },
+    {
+      "id": 2,
+      "name": "Delhi",
+      "code": "DL",
+      "cities": ["New Delhi", "South Delhi", "North Delhi", "East Delhi", "West Delhi", "Central Delhi", "Dwarka", "Rohini"]
+    },
+    {
+      "id": 3,
+      "name": "Karnataka",
+      "code": "KA",
+      "cities": ["Bengaluru", "Mysuru", "Hubli", "Mangaluru", "Belagavi", "Gulbarga", "Davanagere", "Shivamogga", "Tumakuru", "Bellary"]
+    },
+    {
+      "id": 4,
+      "name": "Tamil Nadu",
+      "code": "TN",
+      "cities": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Vellore", "Erode", "Thoothukkudi", "Dindigul"]
+    },
+    {
+      "id": 5,
+      "name": "Telangana",
+      "code": "TG",
+      "cities": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet"]
+    },
+    {
+      "id": 6,
+      "name": "West Bengal",
+      "code": "WB",
+      "cities": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Durgapur", "Asansol", "Malda", "Bardhaman", "Kharagpur", "Haldia"]
+    },
+    {
+      "id": 7,
+      "name": "Gujarat",
+      "code": "GJ",
+      "cities": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Anand", "Navsari"]
+    },
+    {
+      "id": 8,
+      "name": "Rajasthan",
+      "code": "RJ",
+      "cities": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bhilwara", "Sikar", "Sri Ganganagar"]
+    },
+    {
+      "id": 9,
+      "name": "Uttar Pradesh",
+      "code": "UP",
+      "cities": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Allahabad", "Meerut", "Ghaziabad", "Noida", "Aligarh", "Bareilly"]
+    },
+    {
+      "id": 10,
+      "name": "Madhya Pradesh",
+      "code": "MP",
+      "cities": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa"]
+    },
+    {
+      "id": 11,
+      "name": "Bihar",
+      "code": "BR",
+      "cities": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Arrah", "Begusarai", "Katihar", "Munger"]
+    },
+    {
+      "id": 12,
+      "name": "Punjab",
+      "code": "PB",
+      "cities": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur", "Pathankot", "Moga", "Abohar"]
+    },
+    {
+      "id": 13,
+      "name": "Haryana",
+      "code": "HR",
+      "cities": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Hisar", "Karnal", "Sonipat", "Rohtak", "Yamunanagar", "Panchkula"]
+    },
+    {
+      "id": 14,
+      "name": "Kerala",
+      "code": "KL",
+      "cities": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Alappuzha", "Palakkad", "Malappuram", "Kannur", "Kasaragod"]
+    }
+  ]
+}
