@@ -10,6 +10,7 @@ import com.rms.model.*;
 import com.rms.model.enums.SubscriptionStatus;
 import com.rms.repository.*;
 import com.rms.specification.ProductSpecification;
+import com.rms.specification.ServiceCitySpecification;
 import com.rms.specification.WholesalerSellerSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class LocalSellerServiceImpl implements LocalSellerService {
     private final ModelMapper modelMapper;
     private final LocalSellerRepository localSellerRepository;
     private final MessageService messageService;
+    private final ServiceCityRepository serviceCityRepository;
 
 
     // Get all active wholesalers
@@ -194,15 +196,108 @@ public class LocalSellerServiceImpl implements LocalSellerService {
         log.info("Subscription marked inactive for localSeller {} and wholesaler {}", localSellerId, wholesalerId);
     }
 
-    @Override
-    public List<ProductDTO> getAllProductsForSeller() {
-        // Step 1: Fetch active products
-        List<Product> products = productRepository.findByIsActiveTrue();
+//    @Override
+//    public List<ProductDTO> getAllProductsForSeller() {
+//        // Step 1: Fetch active products
+//        List<Product> products = productRepository.findByIsActiveTrue();
+//
+//        // Step 2: Convert Product -> ProductDTO
+//        return products.stream()
+//                .map(product -> modelMapper.map(product, ProductDTO.class))
+//                .toList();
+//    }
 
-        // Step 2: Convert Product -> ProductDTO
+    @Override
+    public List<WholesalerDTO> getWholesalersByCity(String city) {
+        log.info("Fetching wholesalers serving city: {}", city);
+
+        if (city == null || city.trim().isEmpty()) {
+            return List.of();
+        }
+
+        Specification<ServiceCity> spec = ServiceCitySpecification.activeCitiesByName(city);
+        List<ServiceCity> serviceCities = serviceCityRepository.findAll(spec);
+
+        if (serviceCities.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> wholesalerIds = serviceCities.stream()
+                .map(sc -> sc.getWholesaler().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<Wholesaler> wholesalers = wholesalerRepository.findAllById(wholesalerIds);
+
+        return wholesalers.stream()
+                .filter(Wholesaler::getIsActive)
+                .map(this::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByWholesalerIfServesCity(Long wholesalerId, String city) {
+        log.info("Checking if wholesaler {} serves city: {}", wholesalerId, city);
+
+        Specification<ServiceCity> citySpec = ServiceCitySpecification.activeCitiesByName(city)
+                .and(ServiceCitySpecification.byWholesalerId(wholesalerId));
+
+        boolean servesCity = serviceCityRepository.exists(citySpec);
+
+        if (!servesCity) {
+            log.info("Wholesaler {} does not serve city: {}", wholesalerId, city);
+            return List.of();
+        }
+
+        return getActiveProductsByWholesaler(wholesalerId);
+    }
+
+    @Override
+    public List<ProductDTO> getAllProductsForSeller(String city) {
+        log.info("Fetching products for seller city: {}", city);
+
+        if (city == null || city.trim().isEmpty()) {
+            log.warn("City is null or empty, returning empty list");
+            return List.of();
+        }
+
+        List<Long> wholesalerIds = getWholesalerIdsByCity(city);
+
+        if (wholesalerIds.isEmpty()) {
+            log.info("No wholesalers found serving city: {}", city);
+            return List.of();
+        }
+
+        Specification<Product> spec = ProductSpecification.byWholesalerIds(wholesalerIds)
+                .and(ProductSpecification.byActiveOnly());
+
+        List<Product> products = productRepository.findAll(spec);
+
+        log.info("Found {} products for city: {}", products.size(), city);
+
         return products.stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(this::mapToProductDTO)
                 .toList();
+    }
+
+    private ProductDTO mapToProductDTO(Product product) {
+        ProductDTO dto = modelMapper.map(product, ProductDTO.class);
+
+        if (product.getWholesaler() != null) {
+            dto.setWholesalerId(product.getWholesaler().getId());
+            dto.setWholesalerName(product.getWholesaler().getBusinessName());
+        }
+        return dto;
+    }
+
+    private List<Long> getWholesalerIdsByCity(String city) {
+        Specification<ServiceCity> spec = ServiceCitySpecification.activeCitiesByName(city);
+        List<ServiceCity> serviceCities = serviceCityRepository.findAll(spec);
+
+        return serviceCities.stream()
+                .map(sc -> sc.getWholesaler().getId())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override

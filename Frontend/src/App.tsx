@@ -117,6 +117,7 @@ import { WholesalerInvoiceDetailPage } from './pages/wholesaler/InvoiceDetailPag
 import { WholesalerInvoicesPage } from './pages/wholesaler/InvoicesPage.tsx'
 import { WholesalerProfilePage } from './pages/wholesaler/WholesalerProfilePage.tsx'
 import {LocalSellerProfilePage } from './pages/localSeller/LocalSellerProfilePage.tsx'
+import { ServiceCitiesPage } from './pages/wholesaler/ServiceCitiesPage.tsx'
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -142,6 +143,7 @@ function App() {
       <Route path="/wholesaler" element={<WholesalerLayout />}>
         <Route index element={<WholesalerDashboard />} />
         <Route path="products" element={<ProductsPage />} />
+        <Route path="service-areas" element={<ServiceCitiesPage />} />
         <Route path="subscription-requests" element={<WholesalerSubscriptionRequests />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:id" element={<OrderDetailPage />} />

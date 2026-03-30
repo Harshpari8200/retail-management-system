@@ -105,6 +105,7 @@ public class SubscriptionController {
             @RequestParam Long wholesalerId) {
         log.info("API: GET /subscriptions/status?seller={}&wholesaler={}", localSellerId, wholesalerId);
         SubscriptionDTO status = subscriptionService.getSubscriptionStatus(localSellerId, wholesalerId);
+        log.info("Subscription status response: {}", status);
         return ResponseEntity.ok(status);
     }
 

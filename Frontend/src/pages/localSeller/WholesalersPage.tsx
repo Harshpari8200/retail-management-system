@@ -21,6 +21,7 @@ export function WholesalersPage() {
 
   const { user } = useAuth();
   const sellerId = user?.id;
+  const sellerCity = user?.city;
 
   useEffect(() => {
     loadWholesalers();
@@ -34,7 +35,7 @@ export function WholesalersPage() {
 
   async function loadWholesalers() {
     try {
-      const data = await api.getWholesalers();
+      const data = await api.getWholesalers(sellerCity);
       setWholesalers(data);
     } catch (err: any) {
       console.error(err.message);
@@ -49,8 +50,13 @@ export function WholesalersPage() {
       const statusMap: Record<number, SubscriptionStatus> = {};
       await Promise.all(
         wholesalers.map(async (w) => {
-          const res = await api.getSubscriptionStatus(sellerId, w.id);
-          statusMap[w.id] = res.status || "NONE";
+          if (!w.id) return;
+          try {
+            const res = await api.getSubscriptionStatus(sellerId, w.id);
+            statusMap[w.id] = res.status || "NONE";
+          } catch {
+            statusMap[w.id] = "NONE";
+          }
         })
       );
       setStatuses(statusMap);
@@ -65,7 +71,7 @@ export function WholesalersPage() {
     setStatuses((prev) => ({ ...prev, [id]: "PENDING" }));
     try {
       await api.subscribeWholesaler(sellerId, id);
-      
+
     } catch (err: any) {
       console.error(err.message);
       setStatuses((prev) => ({ ...prev, [id]: prevStatus }));

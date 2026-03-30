@@ -28,11 +28,15 @@ public interface LocalSellerService {
 
     void unsubscribeWholesaler(Long localSellerId, Long wholesalerId);
 
-    List<ProductDTO> getAllProductsForSeller();
 
     SellerDTO getSellerProfile(Long userId);
 
     SellerDTO updateSellerProfile(Long userId, UpdateSellerDTO dto);
 
 
+    List<ProductDTO> getAllProductsForSeller(String city);
+
+    List<WholesalerDTO> getWholesalersByCity(String city);
+
+    List<ProductDTO> getProductsByWholesalerIfServesCity(Long wholesalerId, String city);
 }

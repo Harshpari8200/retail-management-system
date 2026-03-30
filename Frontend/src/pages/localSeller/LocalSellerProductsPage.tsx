@@ -37,6 +37,7 @@ export function LocalSellerProductsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const userId = user?.id;
+  const sellerCity = user?.city;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +66,7 @@ export function LocalSellerProductsPage() {
     try {
       setLoading(true);
       setError(null);
-      const allProducts = await api.getAllProductsForSeller();
+      const allProducts = await api.getAllProductsForSeller(sellerCity);
       setProducts(allProducts ?? []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load products");
@@ -83,11 +84,15 @@ export function LocalSellerProductsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const uniqueWholesalers = new Set(products.map((p) => p.wholesalerId));
+        const uniqueWholesalers = new Set(
+          products
+          .map((p) => p.wholesalerId)
+        .filter((id) => id != null));
         const statusMap: Record<number, SubscriptionStatus> = {};
 
         await Promise.all(
           Array.from(uniqueWholesalers).map(async (wId) => {
+            if (!wId) return;
             try {
               const res = await api.getSubscriptionStatus(userId, wId);
               statusMap[wId] = res.status || "NONE";

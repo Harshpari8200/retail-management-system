@@ -36,29 +36,47 @@ public class LocalSellerController {
     /*  Get all active wholesalers */
 
     @GetMapping("/wholesalers")
-    public ResponseEntity<List<WholesalerDTO>> getActiveWholesalers() {
+    public ResponseEntity<List<WholesalerDTO>> getActiveWholesalers(
+            @RequestParam(required = false) String city
+    ) {
         log.info("API call: GET /wholesalers");
 
         List<WholesalerDTO> wholesalers = localSellerService.getActiveWholesalers();
+
+        if (city != null && !city.trim().isEmpty()) {
+            wholesalers = localSellerService.getWholesalersByCity(city);
+        } else {
+            wholesalers = localSellerService.getActiveWholesalers();
+        }
+
         return ResponseEntity.ok(wholesalers);
     }
 
     /*  Get all active products of a wholesaler */
 
     @GetMapping("/wholesalers/{wholesalerId}/products")
-    public ResponseEntity<List<ProductDTO>> getProductsByWholesaler(@PathVariable Long wholesalerId) {
+    public ResponseEntity<List<ProductDTO>> getProductsByWholesaler(
+            @PathVariable Long wholesalerId,
+            @RequestParam(required = false) String city) {
         log.info("API call: GET /wholesalers/{}/products", wholesalerId);
 
-        List<ProductDTO> products = localSellerService.getActiveProductsByWholesaler(wholesalerId);
+        List<ProductDTO> products;
+        if (city != null && !city.trim().isEmpty()) {
+            products = localSellerService.getProductsByWholesalerIfServesCity(wholesalerId, city);
+        } else {
+            products = localSellerService.getActiveProductsByWholesaler(wholesalerId);
+        }
         return ResponseEntity.ok(products);
     }
 
     /* get all products*/
     @GetMapping("/products")
-    public ResponseEntity<List<ProductDTO>> getAllProductsForSeller() {
+    public ResponseEntity<List<ProductDTO>> getAllProductsForSeller(
+            @RequestParam(required = false) String city
+    ) {
         log.info("API call: GET /products");
 
-        List<ProductDTO> products = localSellerService.getAllProductsForSeller();
+        List<ProductDTO> products = localSellerService.getAllProductsForSeller(city);
         return ResponseEntity.ok(products);
     }
 

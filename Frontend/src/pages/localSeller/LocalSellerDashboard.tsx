@@ -217,28 +217,25 @@ export function LocalSellerDashboard() {
   }
 
   return (
-  <div className="space-y-6">
-    {/* Header */}
-    <header>
-      <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Welcome back{user?.username ? `, ${user.username}` : ""}.
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+      <p>
+        Welcome back, {user?.username || "Local Seller"}!
+        {user?.city && <span className="text-slate-500 ml-2">{user.city}</span>}
       </p>
-    </header>
 
-    {/* Notifications */}
-    {notifications.length > 0 && (
-      <div className="space-y-2">
-        {notifications.map((note, index) => (
-          <div
-            key={index}
-            className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
-          >
-            {note}
-          </div>
-        ))}
-      </div>
-    )}
+      {notifications.length > 0 && (
+        <div className="space-y-2">
+          {notifications.map((note, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+            >
+              {note}
+            </div>
+          ))}
+        </div>
+      )}
 
     {/* Stats */}
     <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -21,6 +21,7 @@ export interface LoginResponse {
   username: string;
   businessName?: string | null;
   shopName?: string | null;
+  city?: string;
 }
 
 export interface RegisterRequest {
@@ -33,8 +34,9 @@ export interface RegisterRequest {
   address?: string;
   gstNumber?: string;
   shopName?: string;
-  latitude?: number;
-  longitude?: number;
+  city: string | undefined;
+  state: string | undefined;
+  stateName: string | undefined;
 }
 
 export interface Wholesaler {
@@ -337,14 +339,16 @@ class ApiService {
   // Local Seller APIs
   // ----------------------------
 
-  async getWholesalers(): Promise<any[]> {
-    return this.request<any[]>(`/local-seller/wholesalers`);
+  async getWholesalers(city?: string): Promise<any[]> {
+    const url = city ? `/local-seller/wholesalers?city=${encodeURIComponent(city)}` : `/local-seller/wholesalers`;
+  return this.request<any[]>(url);
   }
 
-  async getWholesalerProducts(wholesalerId: number): Promise<Product[]> {
-    return this.request<Product[]>(
-      `/local-seller/wholesalers/${wholesalerId}/products`,
-    );
+  async getWholesalerProducts(wholesalerId: number, city?: string): Promise<Product[]> {
+    const url = city 
+    ? `/local-seller/wholesalers/${wholesalerId}/products?city=${encodeURIComponent(city)}` 
+    : `/local-seller/wholesalers/${wholesalerId}/products`;
+  return this.request<Product[]>(url);
   }
 
   async getSubscribedWholesalers(
@@ -382,6 +386,10 @@ class ApiService {
     localSellerId: number,
     wholesalerId: number,
   ): Promise<any> {
+    if (!localSellerId || !wholesalerId) {
+    console.warn('getSubscriptionStatus called with invalid IDs:', { localSellerId, wholesalerId });
+    return { status: "NONE", message: "Invalid IDs" };
+  }
     return this.request<any>(
       `/subscriptions/status?localSellerId=${localSellerId}&wholesalerId=${wholesalerId}`,
     );
@@ -398,8 +406,9 @@ class ApiService {
     );
   }
 
-  async getAllProductsForSeller(): Promise<Product[]> {
-    return this.request(`/local-seller/products`);
+  async getAllProductsForSeller(city?: string): Promise<Product[]> {
+    const url = city ? `/local-seller/products?city=${encodeURIComponent(city)}` : `/local-seller/products`;
+  return this.request<Product[]>(url);
   }
 
   async getPendingSubscriptionRequests(
