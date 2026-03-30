@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   LogOut,
@@ -29,6 +29,7 @@ const navigation: NavItem[] = [
   { name: 'Payments', href: '/wholesaler/payments', icon: Package, available: false },
   { name: 'Invoices', href: '/wholesaler/invoices', icon: Package, available: true },
   { name: 'History', href: '/wholesaler/history', icon: Package, available: false },
+
 ]
 
 function NavLinks({
@@ -81,12 +82,11 @@ function NavLinks({
   );
 }
 
-
 export function WholesalerLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
- 
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -116,13 +116,13 @@ export function WholesalerLayout() {
           </div>
           <div className="flex items-center gap-2">
             <button
-      type="button"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
-      aria-label="Profile"
-    
-    >
-      <User className="h-5 w-5" />
-    </button>
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
+              aria-label="Profile"
+              onClick={() => navigate("/wholesaler/profile")}
+            >
+              <User className="h-5 w-5" />
+            </button>
             <button
               type="button"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 hover:bg-red-50"
